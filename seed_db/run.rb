@@ -24,6 +24,7 @@ loop do
   end
 
   break if pull_urls.length < 30
+  current_page += 1
 end
 
 def record_pull(pull_url)

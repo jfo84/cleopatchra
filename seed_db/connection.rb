@@ -24,7 +24,8 @@ class Connection
     unless exists?
       template_connection.exec("CREATE DATABASE #{db_name}")
       connection = PG::Connection.new(dbname: db_name)
-      initialize_tables(connection: connection)
+      initialize_tables(connection)
+      index_tables(connection)
     end
     @connection = connection || PG::Connection.new(dbname: db_name)
   end
@@ -36,17 +37,27 @@ class Connection
 
   # The tables are relatively static. I plan to keep these
   # set in stone and query into the JSON in C++ if I have to
-  def initialize_tables(connection:)
-    ['repos', 'pulls'].each do |table_name|
-      connection.exec("CREATE TABLE #{table_name} (
-        id integer PRIMARY KEY,
-        data jsonb NOT NULL)")
-    end
-    ['comments', 'reviews'].each do |table_name|
-      connection.exec("CREATE TABLE #{table_name} (
-        id integer PRIMARY KEY,
-        data jsonb NOT NULL,
-        pull_id integer NOT NULL)")
+  def initialize_tables(connection)
+    connection.exec('CREATE TABLE repos (
+      id integer PRIMARY KEY,
+      data jsonb NOT NULL)')
+    connection.exec('CREATE TABLE pulls (
+      id integer PRIMARY KEY,
+      data jsonb NOT NULL,
+      repo_id text NOT NULL)')
+    connection.exec("CREATE TABLE comments (
+      id integer PRIMARY KEY,
+      data jsonb NOT NULL,
+      pull_id integer NOT NULL)")
+    connection.exec("CREATE TABLE reviews (
+      id integer PRIMARY KEY,
+      data jsonb NOT NULL,
+      pull_id integer NOT NULL)")
+  end
+
+  def index_tables(connection)
+    ['repos', 'pulls', 'comments', 'reviews'].each do |table_name|
+      connection.exec("CREATE UNIQUE INDEX index_#{table_name}_on_id ON #{table_name} (id)")
     end
   end
 end

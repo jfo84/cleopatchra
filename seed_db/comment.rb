@@ -8,6 +8,6 @@ class Comment
   
   def record
     connection.exec("INSERT INTO comments (id, data, pull_id)
-                    VALUES (#{id}, #{data}), #{pull_id})")
+                    VALUES (#{id}, E'#{data}', #{pull_id})")
   end
 end

@@ -1,4 +1,5 @@
 require 'virtus'
+require_relative './connection'
 
 module DataMixin
 
@@ -11,8 +12,12 @@ module DataMixin
   end
 
   private
+
+  def connection
+    @connection ||= Connection.new('cleopatchra')
+  end
   
   def data
-    data_hash.to_json
+    data_hash.to_s
   end
 end

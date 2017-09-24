@@ -8,6 +8,6 @@ class Review
   
   def record
     connection.exec("INSERT INTO reviews (id, data, pull_id)
-                    VALUES (#{id}, #{data}), #{pull_id})")
+                    VALUES (#{id}, E'#{data}', #{pull_id})")
   end
 end

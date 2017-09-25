@@ -14,10 +14,10 @@ module DataMixin
   private
 
   def connection
-    @connection ||= Connection.new('cleopatchra')
+    @@connection ||= Connection.new('cleopatchra')
   end
   
   def data
-    data_hash.to_s
+    data_hash.to_json
   end
 end

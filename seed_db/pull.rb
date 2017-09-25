@@ -7,8 +7,7 @@ class Pull
   attribute :repo_id, String
 
   def record
-    connection.exec("INSERT INTO pulls (id, data, repo_id)
-                    VALUES (#{id}, to_json('#{data}'::text), #{repo_id})")
+    connection.exec("INSERT INTO pulls (id, data, repo_id) VALUES ($1, $2, $3)", [id, data, repo_id])
   end
 
   def url

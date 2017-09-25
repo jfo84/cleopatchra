@@ -5,8 +5,7 @@ class Repo
   include DataMixin
 
   def record
-    connection.exec("INSERT INTO repos (id, data)
-                    VALUES (#{id}, E'#{data}')")
+    connection.exec("INSERT INTO repos (id, data) VALUES ($1, $2)", [id, data])
   end
 
   def url

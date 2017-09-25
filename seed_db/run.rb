@@ -46,6 +46,8 @@ def seed_repo(organization_id, repo_id)
   
     pull_urls.each do |pull_url|
       pull = record_pull(pull_url, repo_id)
+      # Since comments and reviews hang off pulls
+      next if pull.is_dup?
       record_comments(pull)
       record_reviews(pull)
       # Safeguard to avoid rate limits. I don't want to deal with the empty responses
@@ -64,7 +66,7 @@ def record_repo(organization_id, repo_id)
   repo_request.run
   repo_hash = JSON.parse(repo_request.response.body)
   repo = Repo.new(data_hash: repo_hash)
-  repo.record
+  repo.record unless repo.is_dup?
 end
 
 def record_pull(pull_url, repo_id)
@@ -74,7 +76,7 @@ def record_pull(pull_url, repo_id)
   pull_hash = JSON.parse(pull_request.response.body)
   pull = Pull.new(data_hash: pull_hash, repo_id: repo_id)
   puts pull.id
-  pull.record
+  pull.record unless pull.is_dup?
   pull
 end
 

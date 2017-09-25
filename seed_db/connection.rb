@@ -31,7 +31,7 @@ class Connection
   end
 
   def exists?
-    result = template_connection.exec('SELECT * from pg_database where datname = $1', [ db_name ])
+    result = template_connection.exec('SELECT * from pg_database where datname = $1', [db_name])
     result.ntuples == 1
   end
 

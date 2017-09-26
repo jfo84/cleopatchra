@@ -51,8 +51,8 @@ def seed_repo(organization_id, repo_id)
       record_comments(pull)
       record_reviews(pull)
       # Safeguard to avoid rate limits. I don't want to deal with the empty responses
-      # Limit is 5000/min so 60/5000 is impossible to hit with instant request/response cycles
-      sleep 0.012
+      # Limit is 5000/min
+      sleep 0.5
     end
   
     break if pull_urls.length < 30
@@ -81,7 +81,6 @@ def record_pull(pull_url, repo_id)
 end
 
 def record_comments(pull)
-  # TODO: Pagination
   comments_request = Typhoeus::Request.new("#{pull.url}/comments", **BASE_OPTIONS)
   comments_request.run
   comments = JSON.parse(comments_request.response.body)
@@ -96,4 +95,10 @@ def record_reviews(pull)
   reviews_request = Typhoeus::Request.new("#{pull.url}/reviews", **BASE_OPTIONS)
   reviews_request.run
   reviews = JSON.parse(reviews_request.response.body)
+
+  reviews.each do |review_hash|
+    review_json = review_hash.to_json
+    review = Review.new(data_hash: review_hash, pull_id: pull.id)
+    review.record unless review.is_dup?
+  end
 end

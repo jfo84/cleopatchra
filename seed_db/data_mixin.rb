@@ -20,4 +20,13 @@ module DataMixin
   def data
     data_hash.to_json
   end
+
+  def is_dup?
+    result = connection.exec("SELECT id FROM #{table_name} WHERE id = $1", [id])
+    result.ntuples == 1
+  end
+
+  def table_name
+    "#{self.class.to_s.downcase}s"
+  end
 end

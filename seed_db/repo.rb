@@ -11,9 +11,4 @@ class Repo
   def url
     data_hash['url']
   end
-
-  def is_dup?
-    result = connection.exec("SELECT id FROM repos WHERE id = $1", [id])
-    result.ntuples == 1
-  end
 end

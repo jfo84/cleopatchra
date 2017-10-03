@@ -1,4 +1,4 @@
-BIN = libpq
+BIN = cleopatchra
 
 $(BIN):
 	$(CC) -std=c99 -lpq $(@).c -o $(@)

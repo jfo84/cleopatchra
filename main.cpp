@@ -20,7 +20,7 @@ int main()
   return 0;
 }
 
-PGconn *connect()
+PGconn *connect(const char *hostaddr, const char *port, const char *dbname)
 {
   const char *keys[] = {
     "hostaddr", "port", "dbname", NULL

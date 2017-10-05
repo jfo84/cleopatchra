@@ -1,6 +1,6 @@
-import { computed } from '@ember/object';
-import { inject as service } from '@ember/service';
-import Route from '@ember/route';
+import Ember from 'ember';
+
+const { Route, computed } = Ember;
 
 export default Route.extend({
 });

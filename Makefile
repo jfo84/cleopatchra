@@ -1,7 +1,8 @@
 BIN = cleopatchra
+CC = g++
 
 $(BIN):
-	$(CC) -std=c99 -lpq $(@).c -o $(@)
+	$(CC) -std=c++11 -I/usr/include/websocketpp/ main.cpp -o $(@)
 	./$(BIN)
 
 clean:

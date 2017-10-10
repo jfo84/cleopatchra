@@ -1,20 +1,19 @@
 #include <iostream>
-#include <libpq-fe.h>
-#include "./lib/picojson.h"
+#include "./build/libpq-fe.h"
+#include "./build/picojson.h"
 
 using namespace std;
 
 int main()
 {
   PGconn *conn;
-
   conn = connect("127.0.0.1", "5432", "cleopatchra");
 
   if (NULL == conn) { return 1; }
 
-  // TODO: Figure out how to query
+  const char *query;
+  query = "SELECT * FROM repos LIMIT 10";
 
-  // query
   PGresult *res = PQexec(conn, query);
 
   return 0;

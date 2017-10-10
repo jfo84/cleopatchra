@@ -4,21 +4,6 @@
 
 using namespace std;
 
-int main()
-{
-  PGconn *conn;
-  conn = connect("127.0.0.1", "5432", "cleopatchra");
-
-  if (NULL == conn) { return 1; }
-
-  const char *query;
-  query = "SELECT * FROM repos LIMIT 10";
-
-  PGresult *res = PQexec(conn, query);
-
-  return 0;
-}
-
 PGconn *connect(const char *hostaddr, const char *port, const char *dbname)
 {
   const char *keys[] = {
@@ -41,4 +26,17 @@ PGconn *connect(const char *hostaddr, const char *port, const char *dbname)
   }
 
   return conn;
+}
+
+int main()
+{
+  PGconn *conn = connect("127.0.0.1", "5432", "cleopatchra");
+
+  if (NULL == conn) { return 1; }
+
+  const char *query = "SELECT * FROM repos LIMIT 10";
+
+  PGresult *res = PQexec(conn, query);
+
+  return 0;
 }

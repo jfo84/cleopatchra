@@ -3,9 +3,12 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -19,6 +22,40 @@ func connectionInfo() string {
 	buffer.WriteString(" dbname=cleopatchra sslmode=disable")
 
 	return buffer.String()
+}
+
+func buildPayload(rows *sql.Rows) {
+	var (
+		id           int
+		data, repoID string
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&id, &data, &repoID)
+		if err != nil {
+			panic(err)
+		}
+
+		idString := strconv.Itoa(id)
+
+		fmt.Printf("%v\n", idString)
+
+		type Pull struct {
+			number int
+			url    string
+		}
+		dec := json.NewDecoder(strings.NewReader(data))
+		for {
+			var p Pull
+			if err := dec.Decode(&p); err == io.EOF {
+				break
+			} else if err != nil {
+				panic(err)
+			}
+
+			fmt.Printf("URL: %s\n", p.url)
+		}
+	}
 }
 
 func main() {
@@ -37,20 +74,5 @@ func main() {
 
 	defer rows.Close()
 
-	var (
-		id     int
-		data   string
-		repoID string
-	)
-
-	for rows.Next() {
-		err := rows.Scan(&id, &data, &repoID)
-		if err != nil {
-			panic(err)
-		}
-
-		idString := strconv.Itoa(id)
-
-		fmt.Printf("%v\n", idString)
-	}
+	payload := buildPayload(rows)
 }

@@ -3,47 +3,58 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"io"
+	"net/http"
 	"os"
-	"strings"
 
 	_ "github.com/lib/pq"
 )
 
+func listenAndServe() {
+	hub := newHub()
+	go hub.run()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", 404)
+		return
+	})
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
+
+	addr := ":7000"
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func buildPayload(rows *sql.Rows) {
+	type Pull struct {
+		id           int
+		data, repoID string
+	}
+
 	var (
 		id           int
 		data, repoID string
+		pulls        []*Pull
 	)
 
 	for rows.Next() {
+		i := 0
 		err := rows.Scan(&id, &data, &repoID)
 		if err != nil {
 			panic(err)
 		}
 
-		type Pull struct {
-			number                                  int
-			url, state, title, body, mergeCommitSha string
-		}
-		dec := json.NewDecoder(strings.NewReader(data))
-		for {
-			var p Pull
-			if err := dec.Decode(&p); err == io.EOF {
-				break
-			} else if err != nil {
-				panic(err)
-			}
-
-			if p.number == 10799 {
-				fmt.Printf("%v\n", data)
-			}
-
-			fmt.Printf("Merge Commit SHA: %s\n", p.title)
-		}
+		p := &Pull{id: id, data: data, repoID: repoID}
+		pulls[i] = p
+		i++
 	}
+
+	// Pass pulls data to websocket here
+	listenAndServe()
 }
 
 func connectionInfo() string {

@@ -7,22 +7,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	_ "github.com/lib/pq"
 )
-
-func connectionInfo() string {
-	var buffer bytes.Buffer
-
-	buffer.WriteString("user=")
-	user := os.Getenv("DEFAULT_POSTGRES_USER")
-	buffer.WriteString(user)
-	buffer.WriteString(" dbname=cleopatchra sslmode=disable")
-
-	return buffer.String()
-}
 
 func buildPayload(rows *sql.Rows) {
 	var (
@@ -36,13 +24,9 @@ func buildPayload(rows *sql.Rows) {
 			panic(err)
 		}
 
-		idString := strconv.Itoa(id)
-
-		fmt.Printf("%v\n", idString)
-
 		type Pull struct {
-			number int
-			url    string
+			number                                  int
+			url, state, title, body, mergeCommitSha string
 		}
 		dec := json.NewDecoder(strings.NewReader(data))
 		for {
@@ -53,9 +37,24 @@ func buildPayload(rows *sql.Rows) {
 				panic(err)
 			}
 
-			fmt.Printf("URL: %s\n", p.url)
+			if p.number == 10799 {
+				fmt.Printf("%v\n", data)
+			}
+
+			fmt.Printf("Merge Commit SHA: %s\n", p.title)
 		}
 	}
+}
+
+func connectionInfo() string {
+	var buffer bytes.Buffer
+
+	buffer.WriteString("user=")
+	user := os.Getenv("DEFAULT_POSTGRES_USER")
+	buffer.WriteString(user)
+	buffer.WriteString(" dbname=cleopatchra sslmode=disable")
+
+	return buffer.String()
 }
 
 func main() {
@@ -74,5 +73,5 @@ func main() {
 
 	defer rows.Close()
 
-	payload := buildPayload(rows)
+	buildPayload(rows)
 }

@@ -3,38 +3,35 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
 )
 
-func listenAndServe() {
-	hub := newHub()
-	go hub.run()
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Not Found", 404)
-		return
-	})
-
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-
-	addr := ":7000"
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
-		panic(err)
-	}
+// Pull represents a pull request
+type Pull struct {
+	id           int
+	data, repoID string
 }
 
-func buildPayload(rows *sql.Rows) {
-	type Pull struct {
-		id           int
-		data, repoID string
-	}
+func listenAndServe(pulls []*Pull) {
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.Error(w, "Not Found", 404)
+	// 	return
+	// })
 
+	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	// 	serveWs(w, r)
+	// })
+
+	// addr := ":7000"
+	// err := http.ListenAndServe(addr, nil)
+	// if err != nil {
+	// 	panic(err)
+	// }
+}
+
+func buildPulls(rows *sql.Rows) []*Pull {
 	var (
 		id           int
 		data, repoID string
@@ -53,8 +50,7 @@ func buildPayload(rows *sql.Rows) {
 		i++
 	}
 
-	// Pass pulls data to websocket here
-	listenAndServe()
+	return pulls
 }
 
 func connectionInfo() string {
@@ -84,5 +80,7 @@ func main() {
 
 	defer rows.Close()
 
-	buildPayload(rows)
+	pulls := buildPulls(rows)
+
+	listenAndServe(pulls)
 }

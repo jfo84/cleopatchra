@@ -8,14 +8,28 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// DB is a wrapper over sql.DB
 type DB struct {
 	db *sql.DB
 }
 
-// Pull represents a pull request
+// Pull represents a Github pull request
 type Pull struct {
 	id           int
 	data, repoID *string
+}
+
+// Repo represents a Github repository
+type Repo struct {
+	id *string
+}
+
+func GetRepo(id int) *Repo {
+	// TODO
+}
+
+func GetRepos(page int, perPage int) []*Repo {
+	// TODO
 }
 
 func GetPull(id int) *Pull {

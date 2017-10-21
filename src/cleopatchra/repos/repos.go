@@ -15,6 +15,6 @@ func NewController(db *DB) *ReposController {
 	return &ReposController{db:db}
 }
 
-func (u *ReposController) GetRepos(w http.ResponseWriter, r *http.Request) {
-	u.db.GetRepos(u.page, u.perPage)
+func (rc *ReposController) GetRepos(w http.ResponseWriter, r *http.Request) {
+	rc.db.GetRepos(u.page, u.perPage)
 }

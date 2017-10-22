@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"os"
 	"net/http"
 	"db"
@@ -54,17 +53,6 @@ func listenAndServe() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func openDb() *sql.DB {
-	connInfo := connectionInfo()
-	
-	db, err := sql.Open("postgres", connInfo)
-	if err != nil {
-		panic(err)
-	}
-
-	return db
 }
 
 func main() {

@@ -21,15 +21,62 @@ type Pull struct {
 
 // Repo represents a Github repository
 type Repo struct {
-	id *string
+	id		int
+	data	*string
 }
 
 func GetRepo(id int) *Repo {
-	// TODO
+	db := openDb()
+	rows, err := db.Query("SELECT * FROM repos WHERE id = $1", id)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	var data *string
+
+	rows.Next()
+	err = rows.Scan(&id, data)
+	if err != nil {
+		panic(err)
+	}
+
+	r := &Repo{id:id, data:data}
+
+	return r
 }
 
 func GetRepos(page int, perPage int) []*Repo {
-	// TODO
+	limit := perPage
+	offset := page * perPage
+	db := openDb()
+	rows, err := db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	var (
+		id           int
+		data 				 *string
+		repos        []*Repo
+	)
+
+	for rows.Next() {
+		i := 0
+		err := rows.Scan(&id, data)
+		if err != nil {
+			panic(err)
+		}
+
+	r := &Repo{id:id, data:data}
+		repos[i] = r
+		i++
+	}
+
+	return repos
 }
 
 func GetPull(id int) *Pull {
@@ -41,13 +88,10 @@ func GetPull(id int) *Pull {
 
 	defer rows.Close()
 
-	var (
-		pullID 				int
-		data, repoID	*string
-	)
+	var data, repoID	*string
 
 	rows.Next()
-	err := rows.Scan(&id, &data, &repoID)
+	err = rows.Scan(&id, data, repoID)
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +120,7 @@ func GetPulls(repoID *string, page int, perPage int) []*Pull {
 
 	for rows.Next() {
 		i := 0
-		err := rows.Scan(&id, &data)
+		err := rows.Scan(&id, data)
 		if err != nil {
 			panic(err)
 		}

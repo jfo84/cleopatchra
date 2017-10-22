@@ -8,8 +8,6 @@ import (
 	"pulls"
 	"pull"
 	"github.com/gorilla/mux"
-
-	_ "github.com/lib/pq"
 )
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {

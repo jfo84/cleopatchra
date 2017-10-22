@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"os"
 	"net/http"
 	"db"
 	"repo"
@@ -13,17 +11,6 @@ import (
 
 	_ "github.com/lib/pq"
 )
-
-func connectionInfo() string {
-	var buffer bytes.Buffer
-
-	buffer.WriteString("user=")
-	user := os.Getenv("DEFAULT_POSTGRES_USER")
-	buffer.WriteString(user)
-	buffer.WriteString(" dbname=cleopatchra sslmode=disable")
-
-	return buffer.String()
-}
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/repos", 301)

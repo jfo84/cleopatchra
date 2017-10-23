@@ -2,12 +2,13 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/db"
+	"github.com/jfo84/cleopatchra/api/pull"
+	"github.com/jfo84/cleopatchra/api/pulls"
 	"github.com/jfo84/cleopatchra/api/repo"
 	"github.com/jfo84/cleopatchra/api/repos"
-	"github.com/jfo84/cleopatchra/api/pulls"
-	"github.com/jfo84/cleopatchra/api/pull"
-	"github.com/gorilla/mux"
 )
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +16,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func listenAndServe() {
+func main() {
 	db := db.OpenDb()
 	r := mux.NewRouter()
 
@@ -38,8 +39,4 @@ func listenAndServe() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func main() {
-	listenAndServe()
 }

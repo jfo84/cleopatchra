@@ -1,0 +1,115 @@
+package: .
+import:
+- package: 9fans.net/go
+  subpackages:
+  - acme
+- package: cloud.google.com/go
+  version: ^0.15.0
+  subpackages:
+  - storage
+- package: db
+- package: github.com/MichaelTJones/walk
+- package: github.com/cweill/gotests
+  version: ^1.5.2
+  subpackages:
+  - gotests/process
+  - internal/goparser
+  - internal/input
+  - internal/models
+  - internal/output
+  - internal/render
+  - internal/render/bindata
+- package: github.com/fatih/camelcase
+- package: github.com/fatih/structtag
+  version: ^0.1.0
+- package: github.com/golang/lint
+- package: github.com/gorilla/context
+  version: ^1.1.0
+- package: github.com/gorilla/mux
+  version: ^1.5.0
+- package: github.com/gorilla/websocket
+  version: ^1.2.0
+- package: github.com/lib/pq
+  subpackages:
+  - oid
+- package: github.com/rogpeppe/godef
+  subpackages:
+  - go/ast
+  - go/parser
+  - go/printer
+  - go/scanner
+  - go/token
+  - go/types
+- package: github.com/sqs/goreturns
+  subpackages:
+  - returns
+- package: github.com/uudashr/gopkgs
+- package: golang.org/x/build
+  subpackages:
+  - autocertcache
+- package: golang.org/x/crypto
+  subpackages:
+  - acme/autocert
+- package: golang.org/x/net
+  subpackages:
+  - context
+  - html
+  - html/atom
+  - http2
+  - websocket
+- package: golang.org/x/tools
+  subpackages:
+  - benchmark/parse
+  - blog
+  - blog/atom
+  - cmd/guru/serial
+  - container/intsets
+  - cover
+  - go/ast/astutil
+  - go/buildutil
+  - go/callgraph
+  - go/callgraph/cha
+  - go/callgraph/rta
+  - go/callgraph/static
+  - go/gcexportdata
+  - go/gcimporter15
+  - go/internal/gccgoimporter
+  - go/loader
+  - go/pointer
+  - go/ssa
+  - go/ssa/interp
+  - go/ssa/ssautil
+  - go/types/typeutil
+  - godoc
+  - godoc/analysis
+  - godoc/dl
+  - godoc/proxy
+  - godoc/redirect
+  - godoc/short
+  - godoc/static
+  - godoc/util
+  - godoc/vfs
+  - godoc/vfs/gatefs
+  - godoc/vfs/httpfs
+  - godoc/vfs/mapfs
+  - godoc/vfs/zipfs
+  - imports
+  - playground
+  - playground/socket
+  - present
+  - refactor/eg
+  - refactor/importgraph
+  - refactor/rename
+  - refactor/satisfy
+- package: google.golang.org/appengine
+  version: ^1.0.0
+  subpackages:
+  - datastore
+  - log
+  - memcache
+  - urlfetch
+  - user
+- package: github.com/jfo84/cleopatchra/api/pull
+- package: github.com/jfo84/cleopatchra/api/pulls
+- package: github.com/jfo84/cleopatchra/api/repo
+- package: github.com/jfo84/cleopatchra/api/repos

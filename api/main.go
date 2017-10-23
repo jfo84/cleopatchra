@@ -2,11 +2,11 @@ package main
 
 import (
 	"net/http"
-	"db"
-	"repo"
-	"repos"
-	"pulls"
-	"pull"
+	"github.com/jfo84/cleopatchra/api/db"
+	"github.com/jfo84/cleopatchra/api/repo"
+	"github.com/jfo84/cleopatchra/api/repos"
+	"github.com/jfo84/cleopatchra/api/pulls"
+	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/gorilla/mux"
 )
 

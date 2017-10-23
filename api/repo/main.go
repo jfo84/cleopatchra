@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"db"
+	"github.com/jfo84/cleopatchra/api/db"
 	"net/http"
 )
 

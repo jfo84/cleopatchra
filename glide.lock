@@ -1,0 +1,20 @@
+hash: bbdc8b3f5ad3213f38c830ed78abe16499845ae5fd8462b3d3261e9397552857
+updated: 2017-10-23T17:58:23.57961204+02:00
+imports:
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
+- name: github.com/jfo84/cleopatchra
+  version: 34cca73de423fe865f143b8f56ade6def439dc9a
+  subpackages:
+  - api/db
+  - api/pull
+  - api/pulls
+  - api/repo
+  - api/repos
+- name: github.com/lib/pq
+  version: b609790bd85edf8e9ab7e0f8912750a786177bcf
+  subpackages:
+  - oid
+testImports: []

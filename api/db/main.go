@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	// Adds pq bindings to database/sql
 	_ "github.com/lib/pq"
 )
 

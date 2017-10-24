@@ -39,7 +39,6 @@ func (dbwrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
 	if err != nil {
 		panic(err)
@@ -82,7 +81,6 @@ func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	limit := perPage
 	offset := page * perPage
 
-	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
 		panic(err)
@@ -129,7 +127,6 @@ func (dbwrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
 	if err != nil {
 		panic(err)
@@ -173,7 +170,6 @@ func (dbwrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	limit := perPage
 	offset := page * perPage
 
-	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
 		panic(err)

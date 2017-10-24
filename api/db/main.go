@@ -3,13 +3,17 @@ package db
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
+	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
-// DBWrapper is a wrapper over sql.DB
-type DBWrapper struct {
+// Wrapper is a wrapper over sql.DB
+type Wrapper struct {
 	db *sql.DB
 }
 
@@ -21,11 +25,19 @@ type Pull struct {
 
 // Repo represents a Github repository
 type Repo struct {
-	id		int
-	data	*string
+	id   int
+	data *string
 }
 
-func (dbwrap *DBWrapper) GetRepo(id int) *Repo {
+// GetRepo is a function handler that retrieves a particular repository from the DB,
+// marshalls it to JSON, and writes it with the responseWriter
+func (dbwrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["repoID"])
+	if err != nil {
+		panic(err)
+	}
+
 	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
 	if err != nil {
@@ -42,14 +54,33 @@ func (dbwrap *DBWrapper) GetRepo(id int) *Repo {
 		panic(err)
 	}
 
-	r := &Repo{id:id, data:data}
+	repo := &Repo{id: id, data: data}
 
-	return r
+	rJSON, err := json.Marshal(repo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rJSON)
 }
 
-func (dbwrap *DBWrapper) GetRepos(page int, perPage int) []*Repo {
+// GetRepos is a function handler that retrieves a set of repos from the DB,
+// marshalls them to JSON, and writes them with the responseWriter
+func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	page, err := strconv.Atoi(vars["page"])
+	perPage, err := strconv.Atoi(vars["perPage"])
+	if err != nil {
+		panic(err)
+	}
+
 	limit := perPage
 	offset := page * perPage
+
 	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
@@ -59,9 +90,9 @@ func (dbwrap *DBWrapper) GetRepos(page int, perPage int) []*Repo {
 	defer rows.Close()
 
 	var (
-		id           int
-		data 				 *string
-		repos        []*Repo
+		id    int
+		data  *string
+		repos []*Repo
 	)
 
 	for rows.Next() {
@@ -71,15 +102,32 @@ func (dbwrap *DBWrapper) GetRepos(page int, perPage int) []*Repo {
 			panic(err)
 		}
 
-	r := &Repo{id:id, data:data}
-		repos[i] = r
+		repo := &Repo{id: id, data: data}
+		repos[i] = repo
 		i++
 	}
 
-	return repos
+	rJSON, err := json.Marshal(repos)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rJSON)
 }
 
-func (dbwrap *DBWrapper) GetPull(id int) *Pull {
+// GetPull is a function handler that retrieves a particular pull request from the DB,
+// marshalls it to JSON, and writes it with the responseWriter
+func (dbwrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["pullID"])
+	if err != nil {
+		panic(err)
+	}
+
 	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
 	if err != nil {
@@ -88,7 +136,7 @@ func (dbwrap *DBWrapper) GetPull(id int) *Pull {
 
 	defer rows.Close()
 
-	var data, repoID	*string
+	var data, repoID *string
 
 	rows.Next()
 	err = rows.Scan(&id, data, repoID)
@@ -96,14 +144,34 @@ func (dbwrap *DBWrapper) GetPull(id int) *Pull {
 		panic(err)
 	}
 
-	p := &Pull{id:id, data:data, repoID:repoID}
+	p := &Pull{id: id, data: data, repoID: repoID}
 
-	return p
+	pJSON, err := json.Marshal(p)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(pJSON)
 }
 
-func (dbwrap *DBWrapper) GetPulls(repoID *string, page int, perPage int) []*Pull {
+// GetPulls is a function handler that retrieves a set of pull requests from the DB,
+// marshalls them to JSON, and writes them with the responseWriter
+func (dbwrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	repoID := vars["repoID"]
+	page, err := strconv.Atoi(vars["page"])
+	perPage, err := strconv.Atoi(vars["perPage"])
+	if err != nil {
+		panic(err)
+	}
+
 	limit := perPage
 	offset := page * perPage
+
 	dbwrap = OpenDb()
 	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
@@ -113,9 +181,9 @@ func (dbwrap *DBWrapper) GetPulls(repoID *string, page int, perPage int) []*Pull
 	defer rows.Close()
 
 	var (
-		id           int
-		data 				 *string
-		pulls        []*Pull
+		id    int
+		data  *string
+		pulls []*Pull
 	)
 
 	for rows.Next() {
@@ -125,12 +193,21 @@ func (dbwrap *DBWrapper) GetPulls(repoID *string, page int, perPage int) []*Pull
 			panic(err)
 		}
 
-		p := &Pull{id:id, data:data, repoID:repoID}
+		p := &Pull{id: id, data: data, repoID: &repoID}
 		pulls[i] = p
 		i++
 	}
 
-	return pulls
+	pJSON, err := json.Marshal(pulls)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(pJSON)
 }
 
 func connectionInfo() string {
@@ -144,13 +221,14 @@ func connectionInfo() string {
 	return buffer.String()
 }
 
-func OpenDb() *DBWrapper {
+// OpenDb initializes and returns a pointer to a Wrapper struct
+func OpenDb() *Wrapper {
 	connInfo := connectionInfo()
-	
+
 	db, err := sql.Open("postgres", connInfo)
 	if err != nil {
 		panic(err)
 	}
 
-	return &DBWrapper{db:db}
+	return &Wrapper{db: db}
 }

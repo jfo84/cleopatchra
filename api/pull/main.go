@@ -1,19 +1,22 @@
 package pull
 
 import (
-	"github.com/jfo84/cleopatchra/api/db"
 	"net/http"
+
+	"github.com/jfo84/cleopatchra/api/db"
 )
 
-type PullController struct {
-	id int
-	dbwrap *db.DBWrapper
+// Controller - For re-use of *db.Wrapper
+type Controller struct {
+	dbwrap *db.Wrapper
 }
 
-func NewController(dbwrap *db.DBWrapper) *PullController {
-	return &PullController{dbwrap:dbwrap}
+// NewController is a constructor for initializing with a *db.Wrapper
+func NewController(dbwrap *db.Wrapper) *Controller {
+	return &Controller{dbwrap: dbwrap}
 }
 
-func (pc *PullController) Pull(w http.ResponseWriter, r *http.Request) {
-	pc.dbwrap.GetPull(pc.id)
+// Get writes the controller's model values with the http.ResponseWriter
+func (pc *Controller) Get(w http.ResponseWriter, r *http.Request) {
+	pc.dbwrap.GetPull(w, r)
 }

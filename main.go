@@ -21,16 +21,16 @@ func main() {
 	r := mux.NewRouter()
 
 	reposController := repos.NewController(db)
-	r.HandleFunc("/repos", reposController.Repos)
+	r.HandleFunc("/repos", reposController.Get)
 
 	repoController := repo.NewController(db)
-	r.HandleFunc("/repo/{repoID}", repoController.Repo)
+	r.HandleFunc("/repo/{repoID}", repoController.Get)
 
 	pullsController := pulls.NewController(db)
-	r.HandleFunc("/repo/{repoID}/pulls", pullsController.Pulls)
+	r.HandleFunc("/repo/{repoID}/pulls", pullsController.Get)
 
 	pullController := pull.NewController(db)
-	r.HandleFunc("/repo/{repoID}/pulls/{pullID}", pullController.Pull)
+	r.HandleFunc("/repo/{repoID}/pulls/{pullID}", pullController.Get)
 
 	http.HandleFunc("/", handleIndex)
 

@@ -1,19 +1,22 @@
 package repo
 
 import (
-	"github.com/jfo84/cleopatchra/api/db"
 	"net/http"
+
+	"github.com/jfo84/cleopatchra/api/db"
 )
 
-type RepoController struct {
-	id int
-	dbwrap *db.DBWrapper
+// Controller - For re-use of *db.Wrapper
+type Controller struct {
+	dbwrap *db.Wrapper
 }
 
-func NewController(dbwrap *db.DBWrapper) *RepoController {
-	return &RepoController{dbwrap:dbwrap}
+// NewController is a constructor for initializing with a *db.Wrapper
+func NewController(dbwrap *db.Wrapper) *Controller {
+	return &Controller{dbwrap: dbwrap}
 }
 
-func (rc *RepoController) Repo(w http.ResponseWriter, r *http.Request) {
-	rc.dbwrap.GetRepo(rc.id)
+// Get writes the controller's model values with the http.ResponseWriter
+func (rc *Controller) Get(w http.ResponseWriter, r *http.Request) {
+	rc.dbwrap.GetRepo(w, r)
 }

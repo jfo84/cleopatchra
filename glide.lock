@@ -1,12 +1,12 @@
 hash: bbdc8b3f5ad3213f38c830ed78abe16499845ae5fd8462b3d3261e9397552857
-updated: 2017-10-24T14:35:50.894139704+02:00
+updated: 2017-10-24T14:43:42.297953711+02:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
 - name: github.com/jfo84/cleopatchra
-  version: 0703219098f6bfcf226c6981d8e983152e60c773
+  version: 935014c8caebbfbf152920e2ee71764af00d6772
   subpackages:
   - api/db
   - api/pull

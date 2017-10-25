@@ -32,14 +32,14 @@ type Repo struct {
 
 // GetRepo is a function handler that retrieves a particular repository from the DB,
 // marshalls it to JSON, and writes it with the responseWriter
-func (dbwrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
+func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
 		panic(err)
 	}
 
-	rows, err := dbwrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
+	rows, err := dbWrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +70,7 @@ func (dbwrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB,
 // marshalls them to JSON, and writes them with the responseWriter
-func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
+func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	// Apply defaults of page 1 and perPage 10
@@ -100,7 +100,7 @@ func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	limit := perPage
 	offset := page * perPage
 
-	rows, err := dbwrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
+	rows, err := dbWrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
 		panic(err)
 	}
@@ -139,14 +139,14 @@ func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 
 // GetPull is a function handler that retrieves a particular pull request from the DB,
 // marshalls it to JSON, and writes it with the responseWriter
-func (dbwrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
+func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["pullID"])
 	if err != nil {
 		panic(err)
 	}
 
-	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
+	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
 	if err != nil {
 		panic(err)
 	}
@@ -177,7 +177,7 @@ func (dbwrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 
 // GetPulls is a function handler that retrieves a set of pull requests from the DB,
 // marshalls them to JSON, and writes them with the responseWriter
-func (dbwrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
+func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	// Apply defaults of page 1, perPage 10, and repoID "facebook/react"
@@ -218,7 +218,7 @@ func (dbwrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	limit := perPage
 	offset := page * perPage
 
-	rows, err := dbwrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
+	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
 		panic(err)
 	}

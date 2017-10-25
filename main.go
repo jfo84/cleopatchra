@@ -11,7 +11,7 @@ import (
 	"github.com/jfo84/cleopatchra/api/repos"
 )
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/repos", 301)
 	return
 }
@@ -32,7 +32,7 @@ func main() {
 	pullController := pull.NewController(db)
 	r.HandleFunc("/repo/{repoID}/pulls/{pullID}", pullController.Get)
 
-	http.HandleFunc("/", handleIndex)
+	r.HandleFunc("/", indexHandler)
 
 	addr := ":7000"
 	err := http.ListenAndServe(addr, r)

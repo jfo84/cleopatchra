@@ -1,4 +1,4 @@
-package: github.com/cleopatchra
+package: github.com/jfo84/cleopatchra
 import:
 - package: github.com/gorilla/mux
   version: ^1.5.0

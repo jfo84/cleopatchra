@@ -72,10 +72,29 @@ func (dbwrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 // marshalls them to JSON, and writes them with the responseWriter
 func (dbwrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	page, err := strconv.Atoi(vars["page"])
-	perPage, err := strconv.Atoi(vars["perPage"])
-	if err != nil {
-		panic(err)
+
+	// Apply defaults of page 1 and perPage 10
+	var (
+		page, perPage int
+		err           error
+	)
+
+	if vars["page"] != "" {
+		page, err = strconv.Atoi(vars["page"])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		page = 1
+	}
+
+	if vars["perPage"] != "" {
+		perPage, err = strconv.Atoi(vars["perPage"])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		perPage = 10
 	}
 
 	limit := perPage
@@ -160,11 +179,40 @@ func (dbwrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 // marshalls them to JSON, and writes them with the responseWriter
 func (dbwrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	repoID := vars["repoID"]
-	page, err := strconv.Atoi(vars["page"])
-	perPage, err := strconv.Atoi(vars["perPage"])
-	if err != nil {
-		panic(err)
+
+	// Apply defaults of page 1, perPage 10, and repoID "facebook/react"
+	var (
+		page, perPage int
+		repoID        string
+		err           error
+	)
+
+	if vars["page"] != "" {
+		page, err = strconv.Atoi(vars["page"])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		page = 1
+	}
+
+	if vars["perPage"] != "" {
+		perPage, err = strconv.Atoi(vars["perPage"])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		perPage = 10
+	}
+
+	if vars["repoID"] != "" {
+		repoID = vars["repoID"]
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		// TODO: Remove default
+		repoID = "facebook/react"
 	}
 
 	limit := perPage

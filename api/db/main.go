@@ -21,13 +21,13 @@ type Wrapper struct {
 // Pull represents a Github pull request
 type Pull struct {
 	id           int
-	data, repoID *string
+	data, repoID string
 }
 
 // Repo represents a Github repository
 type Repo struct {
 	id   int
-	data *string
+	data string
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB,
@@ -46,10 +46,10 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var data *string
+	var data string
 
 	rows.Next()
-	err = rows.Scan(&id, data)
+	err = rows.Scan(&id, &data)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,6 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 // marshalls them to JSON, and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
 	// Apply defaults of page 1 and perPage 10
 	var (
 		page, perPage int
@@ -98,7 +97,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := perPage
-	offset := page * perPage
+	offset := (page * perPage) - perPage
 
 	rows, err := dbWrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
@@ -108,24 +107,28 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var (
-		id    int
-		data  *string
-		repos []*Repo
+		id   int
+		data string
 	)
 
+	// Build JSON of the form {"repos": [...]}
+	repos := make([]*string, perPage)
+	reposMap := make(map[string][]*string)
+
+	i := 0
 	for rows.Next() {
-		i := 0
-		err := rows.Scan(&id, data)
+		err := rows.Scan(&id, &data)
 		if err != nil {
 			panic(err)
 		}
 
 		repo := &Repo{id: id, data: data}
-		repos[i] = repo
+		repos[i] = &repo.data
 		i++
 	}
+	reposMap["repos"] = repos
 
-	rJSON, err := json.Marshal(repos)
+	rJSON, err := json.Marshal(reposMap)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -153,10 +156,10 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var data, repoID *string
+	var data, repoID string
 
 	rows.Next()
-	err = rows.Scan(&id, data, repoID)
+	err = rows.Scan(&id, &data, &repoID)
 	if err != nil {
 		panic(err)
 	}
@@ -216,7 +219,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := perPage
-	offset := page * perPage
+	offset := (page * perPage) - perPage
 
 	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
@@ -226,24 +229,28 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var (
-		id    int
-		data  *string
-		pulls []*Pull
+		id   int
+		data string
 	)
 
+	// Build JSON of the form {"pulls": [...]}
+	pulls := make([]*string, perPage)
+	pullsMap := make(map[string][]*string)
+
+	i := 0
 	for rows.Next() {
-		i := 0
-		err := rows.Scan(&id, data)
+		err := rows.Scan(&id, &data, &repoID)
 		if err != nil {
 			panic(err)
 		}
 
-		p := &Pull{id: id, data: data, repoID: &repoID}
-		pulls[i] = p
+		p := &Pull{id: id, data: data, repoID: repoID}
+		pulls[i] = &p.data
 		i++
 	}
+	pullsMap["pulls"] = pulls
 
-	pJSON, err := json.Marshal(pulls)
+	pJSON, err := json.Marshal(pullsMap)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

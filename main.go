@@ -26,11 +26,13 @@ func main() {
 	repoController := repo.NewController(db)
 	r.HandleFunc("/repo/{repoID}", repoController.Get)
 
+	// TODO: Nest pulls under repos and run a migration to use Github's
+	// internal repoID for the URL (e.g., "facebook/react" will not work atm)
 	pullsController := pulls.NewController(db)
-	r.HandleFunc("/repo/{repoID}/pulls", pullsController.Get)
+	r.HandleFunc("/pulls", pullsController.Get)
 
 	pullController := pull.NewController(db)
-	r.HandleFunc("/repo/{repoID}/pulls/{pullID}", pullController.Get)
+	r.HandleFunc("/pulls/{pullID}", pullController.Get)
 
 	r.HandleFunc("/", indexHandler)
 

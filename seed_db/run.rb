@@ -22,20 +22,21 @@ command :seed do |c|
   c.action do |args, options|
     # TODO: Remove the default
     options.default :organization => 'facebook', :repo => 'react'
-    seed_repo(options.organization, options.repo)
+    repo_id = "#{options.organization}/#{options.repo}"
+    seed_repo(repo_id)
   end
 end
 
 BASE_URL = 'https://api.github.com'.freeze
 BASE_OPTIONS = { userpwd: "jfo84:#{ENV.fetch('GITHUB_ACCESS_TOKEN')}" }
 
-def seed_repo(organization_id, repo_id)
-  record_repo(organization_id, repo_id)
-  puts "Seeding database for #{organization_id}/#{repo_id}"
+def seed_repo(repo_id)
+  record_repo(repo_id)
+  puts "Seeding database for #{repo_id}"
   current_page = 1
   loop do
     puts "Starting page #{current_page}..."
-    pulls_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{organization_id}/#{repo_id}/pulls", 
+    pulls_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_id}/pulls", 
       params: { page: current_page, state: 'all' },
       **BASE_OPTIONS
     )
@@ -61,8 +62,8 @@ def seed_repo(organization_id, repo_id)
   puts 'Done'
 end
 
-def record_repo(organization_id, repo_id)
-  repo_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{organization_id}/#{repo_id}", **BASE_OPTIONS)
+def record_repo(repo_id)
+  repo_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_id}", **BASE_OPTIONS)
   repo_request.run
   repo_hash = JSON.parse(repo_request.response.body)
   repo = Repo.new(data_hash: repo_hash)

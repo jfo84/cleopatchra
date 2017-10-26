@@ -18,16 +18,19 @@ type Wrapper struct {
 	db *sql.DB
 }
 
+// TODO: Combine these types?? Much of the code for iterating through pulls/repos
+// could be generalized if this was done. Feels too early to do so now
+
 // Pull represents a Github pull request
 type Pull struct {
-	id           int
-	data, repoID string
+	id   int
+	data *string
 }
 
 // Repo represents a Github repository
 type Repo struct {
 	id   int
-	data string
+	data *string
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB,
@@ -54,18 +57,23 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	repo := &Repo{id: id, data: data}
+	parsedData, err := strconv.Unquote(data)
+	if err != nil {
+		panic(err)
+	}
+
+	repo := &Repo{id: id, data: &parsedData}
 
 	rJSON, err := json.Marshal(repo)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response := wrapJSON("repos", rJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(rJSON)
+	w.Write(response)
 }
 
 // GetRepos is a function handler that retrieves a set of repos from the DB,
@@ -113,7 +121,6 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 
 	// Build JSON of the form {"repos": [...]}
 	repos := make([]*string, perPage)
-	reposMap := make(map[string][]*string)
 
 	i := 0
 	for rows.Next() {
@@ -122,22 +129,26 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-		repo := &Repo{id: id, data: data}
-		repos[i] = &repo.data
+		parsedData, err := strconv.Unquote(data)
+		if err != nil {
+			panic(err)
+		}
+
+		repo := &Repo{id: id, data: &parsedData}
+		repos[i] = repo.data
 		i++
 	}
-	reposMap["repos"] = repos
 
-	rJSON, err := json.Marshal(reposMap)
-
+	rJSON, err := json.Marshal(repos)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response := wrapJSON("repos", rJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(rJSON)
+	w.Write(response)
 }
 
 // GetPull is a function handler that retrieves a particular pull request from the DB,
@@ -164,18 +175,23 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := &Pull{id: id, data: data, repoID: repoID}
+	parsedData, err := strconv.Unquote(data)
+	if err != nil {
+		panic(err)
+	}
+
+	p := &Pull{id: id, data: &parsedData}
 
 	pJSON, err := json.Marshal(p)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response := wrapJSON("pulls", pJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(pJSON)
+	w.Write(response)
 }
 
 // GetPulls is a function handler that retrieves a set of pull requests from the DB,
@@ -235,7 +251,6 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 	// Build JSON of the form {"pulls": [...]}
 	pulls := make([]*string, perPage)
-	pullsMap := make(map[string][]*string)
 
 	i := 0
 	for rows.Next() {
@@ -244,22 +259,41 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-		p := &Pull{id: id, data: data, repoID: repoID}
-		pulls[i] = &p.data
+		parsedData, err := strconv.Unquote(data)
+		if err != nil {
+			panic(err)
+		}
+
+		p := &Pull{id: id, data: &parsedData}
+		pulls[i] = p.data
+
 		i++
 	}
-	pullsMap["pulls"] = pulls
 
-	pJSON, err := json.Marshal(pullsMap)
-
+	pJSON, err := json.Marshal(pulls)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response := wrapJSON("pulls", pJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(pJSON)
+	w.Write(response)
+}
+
+// TODO: Remove this. The only struct-based solution I could find
+// would require unmarshalling and then marshalling back to JSON
+func wrapJSON(wrapperKey string, jsonBytes []byte) []byte {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{"`)
+	buffer.WriteString(wrapperKey)
+	buffer.WriteString(`":`)
+	buffer.Write(jsonBytes)
+	buffer.WriteString(`}`)
+
+	return buffer.Bytes()
 }
 
 func connectionInfo() string {

@@ -3,7 +3,6 @@ package db
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
@@ -170,7 +169,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := &Pull{id: id, data: &parsedData}
+	p := &Pull{id: id, data: &data}
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
 	pullStrings := make([]*string, 1)
@@ -265,13 +264,6 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 	mJSON := buildModelJSON(pulls)
 	response := wrapModelJSON("repos", mJSON)
-
-	mJSON, err := json.Marshal(pulls)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	response := wrapModelJSON("pulls", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

@@ -56,20 +56,18 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
-	parsedData, err := strconv.Unquote(data)
-	if err != nil {
-		panic(err)
-	}
-
-	repo := &Repo{id: id, data: &parsedData}
-
-	rJSON, err := json.Marshal(repo)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if id == 0 {
 		return
 	}
-	response := wrapJSON("repos", rJSON)
+
+	repo := &Repo{id: id, data: &data}
+	// In order to keep the builder interface agnostic, I need to
+	// generate a one-dimensional []*string for buildModelJSON
+	repoStrings := make([]*string, 1)
+	repoStrings[0] = repo.data
+
+	mJSON := buildModelJSON(repoStrings)
+	response := wrapModelJSON("repos", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -128,23 +126,17 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-
-		parsedData, err := strconv.Unquote(data)
-		if err != nil {
-			panic(err)
+		if id == 0 {
+			return
 		}
 
-		repo := &Repo{id: id, data: &parsedData}
+		repo := &Repo{id: id, data: &data}
+
 		repos[i] = repo.data
 		i++
 	}
-
-	rJSON, err := json.Marshal(repos)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	response := wrapJSON("repos", rJSON)
+	mJSON := buildModelJSON(repos)
+	response := wrapModelJSON("repos", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -174,20 +166,18 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
-	parsedData, err := strconv.Unquote(data)
-	if err != nil {
-		panic(err)
+	if id == 0 {
+		return
 	}
 
 	p := &Pull{id: id, data: &parsedData}
+	// In order to keep the builder interface agnostic, I need to
+	// generate a one-dimensional []*string for buildModelJSON
+	pullStrings := make([]*string, 1)
+	pullStrings[0] = p.data
 
-	pJSON, err := json.Marshal(p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	response := wrapJSON("pulls", pJSON)
+	mJSON := buildModelJSON(pullStrings)
+	response := wrapModelJSON("pulls", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -258,6 +248,9 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
+		if id == 0 {
+			return
+		}
 
 		parsedData, err := strconv.Unquote(data)
 		if err != nil {
@@ -270,25 +263,43 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		i++
 	}
 
-	pJSON, err := json.Marshal(pulls)
+	mJSON := buildModelJSON(pulls)
+	response := wrapModelJSON("repos", mJSON)
+
+	mJSON, err := json.Marshal(pulls)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response := wrapJSON("pulls", pJSON)
+	response := wrapModelJSON("pulls", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
 
-// TODO: Remove this. The only struct-based solution I could find
+// TODO: Remove these. The only struct-based solution I could find
 // would require unmarshalling and then marshalling back to JSON
-func wrapJSON(wrapperKey string, jsonBytes []byte) []byte {
+func buildModelJSON(modelStrings []*string) []byte {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`[`)
+	for idx, string := range modelStrings {
+		if idx != 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(*string)
+	}
+	buffer.WriteString(`]`)
+
+	return buffer.Bytes()
+}
+
+func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`{"`)
-	buffer.WriteString(wrapperKey)
+	buffer.WriteString(modelKey)
 	buffer.WriteString(`":`)
 	buffer.Write(jsonBytes)
 	buffer.WriteString(`}`)

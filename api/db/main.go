@@ -41,6 +41,13 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	// TODO: Change to use https://github.com/go-pg/pg
+	//  // Select user by primary key.
+	//  user := User{Id: user1.Id}
+	//  err = db.Select(&user)
+	//  if err != nil {
+	// 		panic(err)
+	//  }
 	rows, err := dbWrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
 	if err != nil {
 		panic(err)
@@ -103,6 +110,13 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 
 	offset := (page * limit) - limit
 
+	// TODO: Change to use https://github.com/go-pg/pg
+	//  // Select all users.
+	//  var users []User
+	//  err = db.Model(&users).Select().Apply(pg.Pagination(r.URL.Query()))
+	//  if err != nil {
+	// 		panic(err)
+	//  }
 	rows, err := dbWrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
 		panic(err)
@@ -150,6 +164,13 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	// TODO: Change to use https://github.com/go-pg/pg
+	//  // Select user by primary key.
+	//  user := User{Id: user1.Id}
+	//  err = db.Select(&user)
+	//  if err != nil {
+	// 		panic(err)
+	//  }
 	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
 	if err != nil {
 		panic(err)
@@ -224,6 +245,13 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 	offset := (page * limit) - limit
 
+	// TODO: Change to use https://github.com/go-pg/pg
+	//  // Select all users.
+	//  var users []User
+	//  err = db.Model(&users).Select().Apply(pg.Pagination(r.URL.Query()))
+	//  if err != nil {
+	// 		panic(err)
+	//  }
 	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
 		panic(err)

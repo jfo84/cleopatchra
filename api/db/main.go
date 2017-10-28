@@ -126,7 +126,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		if id == 0 {
-			return
+			continue
 		}
 
 		repo := &Repo{id: id, data: &data}
@@ -248,7 +248,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		if id == 0 {
-			return
+			continue
 		}
 
 		p := &Pull{id: id, data: &data}

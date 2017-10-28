@@ -276,11 +276,13 @@ func buildModelJSON(modelStrings []*string) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
-	for idx, string := range modelStrings {
-		if idx != 0 {
-			buffer.WriteString(",")
+	for idx, modelString := range modelStrings {
+		if modelString != nil {
+			if idx != 0 {
+				buffer.WriteString(",")
+			}
+			buffer.WriteString(*modelString)
 		}
-		buffer.WriteString(*string)
 	}
 	buffer.WriteString(`]`)
 

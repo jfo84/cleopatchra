@@ -77,10 +77,10 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 // marshalls them to JSON, and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	// Apply defaults of page 1 and perPage 10
+	// Apply defaults of page 1 and limit 10
 	var (
-		page, perPage int
-		err           error
+		page, limit int
+		err         error
 	)
 
 	if vars["page"] != "" {
@@ -92,17 +92,16 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	if vars["perPage"] != "" {
-		perPage, err = strconv.Atoi(vars["perPage"])
+	if vars["limit"] != "" {
+		limit, err = strconv.Atoi(vars["limit"])
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		perPage = 10
+		limit = 10
 	}
 
-	limit := perPage
-	offset := (page * perPage) - perPage
+	offset := (page * limit) - limit
 
 	rows, err := dbWrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
@@ -117,7 +116,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	)
 
 	// Build JSON of the form {"repos": [...]}
-	repos := make([]*string, perPage)
+	repos := make([]*string, limit)
 
 	i := 0
 	for rows.Next() {
@@ -188,11 +187,11 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	// Apply defaults of page 1, perPage 10, and repoID "facebook/react"
+	// Apply defaults of page 1, limit 10, and repoID "facebook/react"
 	var (
-		page, perPage int
-		repoID        string
-		err           error
+		page, limit int
+		repoID      string
+		err         error
 	)
 
 	if vars["page"] != "" {
@@ -204,13 +203,13 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	if vars["perPage"] != "" {
-		perPage, err = strconv.Atoi(vars["perPage"])
+	if vars["limit"] != "" {
+		limit, err = strconv.Atoi(vars["limit"])
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		perPage = 10
+		limit = 10
 	}
 
 	if vars["repoID"] != "" {
@@ -223,8 +222,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		repoID = "facebook/react"
 	}
 
-	limit := perPage
-	offset := (page * perPage) - perPage
+	offset := (page * limit) - limit
 
 	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
 	if err != nil {
@@ -239,7 +237,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	)
 
 	// Build JSON of the form {"pulls": [...]}
-	pulls := make([]*string, perPage)
+	pulls := make([]*string, limit)
 
 	i := 0
 	for rows.Next() {

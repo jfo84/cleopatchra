@@ -251,19 +251,14 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		parsedData, err := strconv.Unquote(data)
-		if err != nil {
-			panic(err)
-		}
+		p := &Pull{id: id, data: &data}
 
-		p := &Pull{id: id, data: &parsedData}
 		pulls[i] = p.data
-
 		i++
 	}
 
 	mJSON := buildModelJSON(pulls)
-	response := wrapModelJSON("repos", mJSON)
+	response := wrapModelJSON("pulls", mJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

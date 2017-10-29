@@ -8,10 +8,9 @@ const Router = Ember.Router.extend({
 
 Router.map(function() {
   this.route('repos', { path: '/' });
-  this.route('repo', { path: '/repo/:repo_id' }, function() {
-    this.route('pulls');
-    this.route('pull', { path: '/pull/:pull_id' });
-  });
+  this.route('repo', { path: '/repo/:repo_id' });
+  this.route('pulls');
+  this.route('pull', { path: '/pull/:pull_id' });
 });
 
 export default Router;

@@ -23,13 +23,13 @@ type Wrapper struct {
 // Pull represents a Github pull request
 type Pull struct {
 	id   int
-	data *string
+	data string
 }
 
 // Repo represents a Github repository
 type Repo struct {
 	id   int
-	data *string
+	data string
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB,
@@ -66,11 +66,11 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repo := &Repo{id: id, data: &data}
+	repo := &Repo{id: id, data: data}
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
 	repoStrings := make([]*string, 1)
-	repoStrings[0] = repo.data
+	repoStrings[0] = &repo.data
 
 	mJSON := buildModelJSON(repoStrings)
 	response := wrapModelJSON("repos", mJSON)
@@ -141,9 +141,9 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		repo := &Repo{id: id, data: &data}
+		repo := &Repo{id: id, data: data}
 
-		repos[i] = repo.data
+		repos[i] = &repo.data
 		i++
 	}
 	mJSON := buildModelJSON(repos)
@@ -187,11 +187,11 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := &Pull{id: id, data: &data}
+	p := &Pull{id: id, data: data}
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
 	pullStrings := make([]*string, 1)
-	pullStrings[0] = p.data
+	pullStrings[0] = &p.data
 
 	mJSON := buildModelJSON(pullStrings)
 	response := wrapModelJSON("pulls", mJSON)
@@ -274,9 +274,9 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		p := &Pull{id: id, data: &data}
+		p := &Pull{id: id, data: data}
 
-		pulls[i] = p.data
+		pulls[i] = &p.data
 		i++
 	}
 

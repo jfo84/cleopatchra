@@ -75,8 +75,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	mJSON := buildModelJSON(repoStrings)
 	response := wrapModelJSON("repos", mJSON)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	addResponseHeaders(w)
 	w.Write(response)
 }
 
@@ -150,8 +149,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	mJSON := buildModelJSON(repos)
 	response := wrapModelJSON("repos", mJSON)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	addResponseHeaders(w)
 	w.Write(response)
 }
 
@@ -198,8 +196,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	mJSON := buildModelJSON(pullStrings)
 	response := wrapModelJSON("pulls", mJSON)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	addResponseHeaders(w)
 	w.Write(response)
 }
 
@@ -286,8 +283,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	mJSON := buildModelJSON(pulls)
 	response := wrapModelJSON("pulls", mJSON)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	addResponseHeaders(w)
 	w.Write(response)
 }
 
@@ -320,6 +316,12 @@ func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {
 	buffer.WriteString(`}`)
 
 	return buffer.Bytes()
+}
+
+func addResponseHeaders(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
 }
 
 func connectionInfo() string {

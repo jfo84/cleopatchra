@@ -2582,6 +2582,13 @@ ember-load-initializers@^1.0.0:
   dependencies:
     ember-cli-babel "^6.0.0-beta.7"
 
+ember-markdown-it@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/ember-markdown-it/-/ember-markdown-it-0.0.6.tgz#cc468ef11f75e7305ac7ffbbec264b7b36e0b0d7"
+  dependencies:
+    ember-cli-babel "^5.1.7"
+    markdown-it "^8.3.1"
+
 ember-qunit@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ember-qunit/-/ember-qunit-2.2.0.tgz#3cdf400031c93a38de781a7304819738753b7f99"

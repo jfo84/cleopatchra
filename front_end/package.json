@@ -34,6 +34,7 @@
     "ember-data": "~2.15.0",
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^1.0.0",
+    "ember-markdown-it": "^0.0.6",
     "ember-resolver": "^4.0.0",
     "ember-source": "~2.15.0",
     "ember-websockets": "^7.0.4",

@@ -1,0 +1,6 @@
+{
+  "name": "cleopatchra",
+  "dependencies": {
+    "markdown-it": "^8.4.0"
+  }
+}

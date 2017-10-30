@@ -5,4 +5,5 @@ export default DS.Model.extend({
   body: DS.attr('string'),
   state: DS.attr('string'),
   title: DS.attr('string'),
+  number: DS.attr('number'),
 })

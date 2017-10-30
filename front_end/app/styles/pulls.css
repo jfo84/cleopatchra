@@ -5,10 +5,35 @@
   flex-direction: column;
 }
 
-.title {
+.title-wrapper {
+  display: flex;
   flex: 1;
+  padding: 10px;
+}
+
+.title {
+  flex: 0 1 auto;
+  -webkit-align-self: flex-start;
+  align-self: flex-start;
+  font-weight: lighter;
+  font-family: 'Lato', sans-serif;
+  padding: 3px;
+}
+
+.number {
+  flex: 1 0 auto;
+  font-weight: lighter;
+  font-family: 'Lato', sans-serif;
+  color: #698fa1;
+  padding: 3px;
 }
 
 .body {
   flex: 5;
+  font-weight: lighter;
+  font-family: 'Lato', sans-serif;
+  border-style: groove;
+  border-width: 3px;
+  background: #dcf3ff;
+  padding: 5px 5px 5px 10px;
 }

@@ -1,1 +1,6 @@
-{{outlet}}
+{{#each pulls as |pull|}}
+  <div local-class='pull-wrapper'>
+    <div local-class='title'>{{pull.title}}</div>
+    <div local-class='body'>{{pull.body}}</div>
+  </div>
+{{/each}}

@@ -1,0 +1,14 @@
+.pull-wrapper {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.title {
+  flex: 1;
+}
+
+.body {
+  flex: 5;
+}

@@ -22,21 +22,21 @@ command :seed do |c|
   c.action do |args, options|
     # TODO: Remove the default
     options.default :organization => 'facebook', :repo => 'react'
-    repo_id = "#{options.organization}/#{options.repo}"
-    seed_repo(repo_id)
+    repo_external_id = "#{options.organization}/#{options.repo}"
+    seed_repo(repo_external_id)
   end
 end
 
 BASE_URL = 'https://api.github.com'.freeze
 BASE_OPTIONS = { userpwd: "jfo84:#{ENV.fetch('GITHUB_ACCESS_TOKEN')}" }
 
-def seed_repo(repo_id)
-  record_repo(repo_id)
-  puts "Seeding database for #{repo_id}"
+def seed_repo(repo_external_id)
+  repo = record_repo(repo_external_id)
+  puts "Seeding database for #{repo_external_id}"
   current_page = 1
   loop do
     puts "Starting page #{current_page}..."
-    pulls_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_id}/pulls", 
+    pulls_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_external_id}/pulls", 
       params: { page: current_page, state: 'all' },
       **BASE_OPTIONS
     )
@@ -46,7 +46,7 @@ def seed_repo(repo_id)
     pull_urls = pulls_hash.map { |pull_hash| pull_hash['url'] }
   
     pull_urls.each do |pull_url|
-      pull = record_pull(pull_url, repo_id)
+      pull = record_pull(pull_url, repo.id)
       # Since comments and reviews hang off pulls
       next if pull.is_dup?
       record_comments(pull)
@@ -62,12 +62,13 @@ def seed_repo(repo_id)
   puts 'Done'
 end
 
-def record_repo(repo_id)
-  repo_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_id}", **BASE_OPTIONS)
+def record_repo(repo_external_id)
+  repo_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_external_id}", **BASE_OPTIONS)
   repo_request.run
   repo_hash = JSON.parse(repo_request.response.body)
   repo = Repo.new(data_hash: repo_hash)
   repo.record unless repo.is_dup?
+  repo
 end
 
 def record_pull(pull_url, repo_id)

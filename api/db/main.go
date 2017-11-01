@@ -205,11 +205,10 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	// Apply defaults of page 1, limit 10, and repoID "facebook/react"
+	// Apply defaults of page 1, limit 10, and repoID 10270250 (React)
 	var (
-		page, limit int
-		repoID      string
-		err         error
+		page, limit, repoID int
+		err                 error
 	)
 
 	if vars["page"] != "" {
@@ -231,13 +230,13 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vars["repoID"] != "" {
-		repoID = vars["repoID"]
+		repoID, err = strconv.Atoi(vars["repoID"])
 		if err != nil {
 			panic(err)
 		}
 	} else {
 		// TODO: Remove default
-		repoID = "facebook/react"
+		repoID = 10270250
 	}
 
 	offset := (page * limit) - limit

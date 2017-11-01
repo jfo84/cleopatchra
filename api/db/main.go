@@ -32,8 +32,7 @@ type Repo struct {
 	data string
 }
 
-// GetRepo is a function handler that retrieves a particular repository from the DB,
-// marshalls it to JSON, and writes it with the responseWriter
+// GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["repoID"])
@@ -79,8 +78,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// GetRepos is a function handler that retrieves a set of repos from the DB,
-// marshalls them to JSON, and writes them with the responseWriter
+// GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	// Apply defaults of page 1 and limit 10
@@ -153,8 +151,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// GetPull is a function handler that retrieves a particular pull request from the DB,
-// marshalls it to JSON, and writes it with the responseWriter
+// GetPull is a function handler that retrieves a particular PR from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["pullID"])
@@ -200,8 +197,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// GetPulls is a function handler that retrieves a set of pull requests from the DB,
-// marshalls them to JSON, and writes them with the responseWriter
+// GetPulls is a function handler that retrieves a set of PR's from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 

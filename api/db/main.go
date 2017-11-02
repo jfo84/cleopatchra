@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -108,8 +109,17 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 
 // GetPulls is a function handler that retrieves a set of PR's from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	repoID, err := strconv.Atoi(vars["repoID"])
+	if err != nil {
+		panic(err)
+	}
+
 	var pulls []Pull
-	err := dbWrap.db.Model(&pulls).Apply(orm.Pagination(r.URL.Query())).Select()
+	err = dbWrap.db.Model(&pulls).
+		Where("pull.repo_id = ?", repoID).
+		Apply(orm.Pagination(r.URL.Query())).
+		Select()
 	if err != nil {
 		panic(err)
 	}
@@ -164,8 +174,9 @@ func addResponseHeaders(w http.ResponseWriter) {
 
 // OpenDb initializes and returns a pointer to a Wrapper struct
 func OpenDb() *Wrapper {
+	user := os.Getenv("DEFAULT_POSTGRES_USER")
 	db := pg.Connect(&pg.Options{
-		User:     "JRF",
+		User:     user,
 		Database: "cleopatchra",
 	})
 

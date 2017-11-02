@@ -33,7 +33,7 @@ func main() {
 	reposController := repos.NewController(db)
 	r.HandleFunc("/repos", reposController.Get)
 
-	http.HandleFunc("/", indexHandler)
+	r.HandleFunc("/", indexHandler)
 
 	addr := ":7000"
 	err := http.ListenAndServe(addr, r)

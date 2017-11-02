@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-
 	"github.com/jfo84/cleopatchra/api/db"
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/cleopatchra/api/pulls"

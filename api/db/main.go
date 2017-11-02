@@ -2,7 +2,6 @@ package db
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -63,22 +62,15 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
-	var repos []Repo
-	// query := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query()))
-	query := orm.NewQuery(nil, &Repo{})
-	query = query.Apply(orm.Pagination(r.URL.Query()))
-	err := query.Select()
+	repos := []Repo{}
+	err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
 	if err != nil {
 		panic(err)
 	}
 
 	// Build JSON of the form {"repos": [...]}
-	fmt.Println(r.URL.Query())
-	fmt.Println(query.getFields())
 	mStrings := make([]*string, len(repos))
 	for idx, repo := range repos {
-		fmt.Printf("%s\n", strconv.Itoa(repo.id))
-		fmt.Printf("%s\n", repo.data)
 		mStrings[idx] = &repo.data
 	}
 

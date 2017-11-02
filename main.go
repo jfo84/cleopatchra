@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/jfo84/cleopatchra/api/db"
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/cleopatchra/api/pulls"
@@ -17,23 +19,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	db := db.OpenDb()
-
-	http.HandleFunc("/", indexHandler)
-
-	reposController := repos.NewController(db)
-	http.HandleFunc("/repos", reposController.Get)
+	r := mux.NewRouter()
 
 	pullsController := pulls.NewController(db)
-	http.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
+	r.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
 
 	pullController := pull.NewController(db)
-	http.HandleFunc("/pulls/{pullID}", pullController.Get)
+	r.HandleFunc("/pulls/{pullID}", pullController.Get)
 
 	repoController := repo.NewController(db)
-	http.HandleFunc("/repos/{repoID}", repoController.Get)
+	r.HandleFunc("/repos/{repoID}", repoController.Get)
+
+	reposController := repos.NewController(db)
+	r.HandleFunc("/repos", reposController.Get)
+
+	r.HandleFunc("/", indexHandler)
 
 	addr := ":7000"
-	err := http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, r)
 	if err != nil {
 		panic(err)
 	}

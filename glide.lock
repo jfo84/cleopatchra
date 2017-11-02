@@ -1,12 +1,26 @@
-hash: d7cedb4f053006b44306a125ce0651a2df45d7f7f9af94a4cfa9e86e888399a0
-updated: 2017-10-25T19:56:13.993901508+02:00
+hash: 4f7cd259e84b1835b2870386961ef880a09bca7ecd5d8346de13595eadfdb4fc
+updated: 2017-11-02T14:59:06.656019659+01:00
 imports:
+- name: github.com/go-pg/pg
+  version: c2c9b3c1cb6dcc2eac1269d1557aeee791312a1c
+  subpackages:
+  - internal
+  - internal/parser
+  - internal/pool
+  - orm
+  - types
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
+- name: github.com/jinzhu/inflection
+  version: 1c35d901db3da928c72a72d8458480cc9ade058f
 - name: github.com/lib/pq
   version: b609790bd85edf8e9ab7e0f8912750a786177bcf
   subpackages:
   - oid
-testImports: []
+testImports:
+- name: github.com/bluele/factory-go
+  version: 1d928936c2ee62f4a0385db9842bc037bac527c1
+  subpackages:
+  - factory

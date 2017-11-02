@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
+	"github.com/gorilla/mux"
 )
 
 // Wrapper is a wrapper over sql.DB
@@ -21,28 +22,25 @@ type Wrapper struct {
 
 // Pull represents a Github pull request
 type Pull struct {
-	id   int
-	data string
+	Id   int
+	Data string
 }
 
 // Repo represents a Github repository
 type Repo struct {
-	id   int
-	data string
+	Id   int
+	Data string
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
-	repoIDs, ok := r.URL.Query()["repoID"]
-	if !ok || len(repoIDs) < 1 {
-		panic("No repoID in repos query")
-	}
-	id, err := strconv.Atoi(repoIDs[0])
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
 		panic(err)
 	}
 
-	repo := Repo{id: id}
+	repo := Repo{Id: id}
 	err = dbWrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
@@ -51,7 +49,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
 	mStrings := make([]*string, 1)
-	mStrings[0] = &repo.data
+	mStrings[0] = &repo.Data
 
 	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("repos", mJSON)
@@ -62,8 +60,9 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
-	repos := []Repo{}
-	err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
+	var repos []Repo
+	// err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
+	err := dbWrap.db.Model(&repos).Select()
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +70,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	// Build JSON of the form {"repos": [...]}
 	mStrings := make([]*string, len(repos))
 	for idx, repo := range repos {
-		mStrings[idx] = &repo.data
+		mStrings[idx] = &repo.Data
 	}
 
 	mJSON := buildModelJSON(mStrings)
@@ -83,16 +82,13 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 
 // GetPull is a function handler that retrieves a particular PR from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
-	pullIDs, ok := r.URL.Query()["pullID"]
-	if !ok || len(pullIDs) < 1 {
-		panic("No pullID in pulls query")
-	}
-	id, err := strconv.Atoi(pullIDs[0])
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["pullID"])
 	if err != nil {
 		panic(err)
 	}
 
-	pull := Pull{id: id}
+	pull := Pull{Id: id}
 	err = dbWrap.db.Select(&pull)
 	if err != nil {
 		panic(err)
@@ -101,7 +97,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
 	mStrings := make([]*string, 1)
-	mStrings[0] = &pull.data
+	mStrings[0] = &pull.Data
 
 	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("pulls", mJSON)
@@ -121,7 +117,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	// Build JSON of the form {"pulls": [...]}
 	mStrings := make([]*string, len(pulls))
 	for idx, pull := range pulls {
-		mStrings[idx] = &pull.data
+		mStrings[idx] = &pull.Data
 	}
 
 	mJSON := buildModelJSON(mStrings)
@@ -169,8 +165,7 @@ func addResponseHeaders(w http.ResponseWriter) {
 // OpenDb initializes and returns a pointer to a Wrapper struct
 func OpenDb() *Wrapper {
 	db := pg.Connect(&pg.Options{
-		User:     "postgres",
-		Password: "",
+		User:     "JRF",
 		Database: "cleopatchra",
 	})
 

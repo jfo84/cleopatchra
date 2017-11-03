@@ -8,7 +8,6 @@ import (
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/cleopatchra/api/pulls"
 	"github.com/jfo84/cleopatchra/api/repo"
-	"github.com/jfo84/cleopatchra/api/repos"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,21 +17,22 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	db := db.OpenDb()
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
+	s := r.PathPrefix("/repos").Subrouter()
+
+	// reposController := repos.NewController(db)
+	// s.HandleFunc("/", reposController.Get)
+
+	repoController := repo.NewController(db)
+	s.HandleFunc("/{repoID}/", repoController.Get)
 
 	pullsController := pulls.NewController(db)
-	r.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
+	s.HandleFunc("/{repoID}/pulls", pullsController.Get)
 
 	pullController := pull.NewController(db)
 	r.HandleFunc("/pulls/{pullID}", pullController.Get)
 
-	repoController := repo.NewController(db)
-	r.HandleFunc("/repos/{repoID}", repoController.Get)
-
-	reposController := repos.NewController(db)
-	r.HandleFunc("/repos", reposController.Get)
-
-	r.HandleFunc("/", indexHandler)
+	// r.HandleFunc("/", indexHandler)
 
 	addr := ":7000"
 	err := http.ListenAndServe(addr, r)

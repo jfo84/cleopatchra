@@ -21,13 +21,15 @@ type Wrapper struct {
 
 // Pull represents a Github pull request
 type Pull struct {
-	Id   int
-	Data string
+	ID     int
+	Data   string
+	RepoID int
+	Repo   *Repo
 }
 
 // Repo represents a Github repository
 type Repo struct {
-	Id   int
+	ID   int
 	Data string
 }
 
@@ -39,7 +41,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	repo := Repo{Id: id}
+	repo := Repo{ID: id}
 	err = dbWrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
@@ -60,8 +62,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	var repos []Repo
-	// err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
-	err := dbWrap.db.Model(&repos).Select()
+	err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +88,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	pull := Pull{Id: id}
+	pull := Pull{ID: id}
 	err = dbWrap.db.Select(&pull)
 	if err != nil {
 		panic(err)

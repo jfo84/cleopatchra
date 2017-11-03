@@ -10,17 +10,6 @@ import (
 	"github.com/go-pg/pg/orm"
 )
 
-type Repo struct {
-	ID   int
-	Data string
-}
-
-type Pull struct {
-	ID   int
-	Data string
-	Repo *Repo
-}
-
 var PullFactory = factory.NewFactory(
 	&Pull{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
@@ -90,7 +79,11 @@ func TestDB(t *testing.T) {
 			panic(err)
 		}
 
-		ctx := context.WithValue(context.Background(), "tx", tx)
+		// To avoid collisions with other keys
+		type key string
+		const txKey key = "tx"
+
+		ctx := context.WithValue(context.Background(), txKey, tx)
 		v, err := PullFactory.CreateWithContext(ctx)
 		if err != nil {
 			panic(err)

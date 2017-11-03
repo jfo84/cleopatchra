@@ -2,4 +2,5 @@ package: github.com/jfo84/cleopatchra
 import:
 - package: github.com/gorilla/mux
   version: ^1.5.0
-- package: github.com/lib/pq
+- package: github.com/go-pg/pg
+  version: ~6.6.6

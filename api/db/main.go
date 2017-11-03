@@ -2,19 +2,18 @@ package db
 
 import (
 	"bytes"
-	"database/sql"
 	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 	"github.com/gorilla/mux"
-	// Adds pq bindings to database/sql
-	_ "github.com/lib/pq"
 )
 
 // Wrapper is a wrapper over sql.DB
 type Wrapper struct {
-	db *sql.DB
+	db *pg.DB
 }
 
 // TODO: Combine these types?? Much of the code for iterating through pulls/repos
@@ -22,14 +21,14 @@ type Wrapper struct {
 
 // Pull represents a Github pull request
 type Pull struct {
-	id   int
-	data string
+	Id   int
+	Data string
 }
 
 // Repo represents a Github repository
 type Repo struct {
-	id   int
-	data string
+	Id   int
+	Data string
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
@@ -40,38 +39,18 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	// TODO: Change to use https://github.com/go-pg/pg
-	//  // Select user by primary key.
-	//  user := User{Id: user1.Id}
-	//  err = db.Select(&user)
-	//  if err != nil {
-	// 		panic(err)
-	//  }
-	rows, err := dbWrap.db.Query("SELECT * FROM repos WHERE id = $1", id)
+	repo := Repo{Id: id}
+	err = dbWrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
 	}
 
-	defer rows.Close()
-
-	var data string
-
-	rows.Next()
-	err = rows.Scan(&id, &data)
-	if err != nil {
-		panic(err)
-	}
-	if id == 0 {
-		return
-	}
-
-	repo := &Repo{id: id, data: data}
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
-	repoStrings := make([]*string, 1)
-	repoStrings[0] = &repo.data
+	mStrings := make([]*string, 1)
+	mStrings[0] = &repo.Data
 
-	mJSON := buildModelJSON(repoStrings)
+	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("repos", mJSON)
 
 	addResponseHeaders(w)
@@ -80,71 +59,20 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	// Apply defaults of page 1 and limit 10
-	var (
-		page, limit int
-		err         error
-	)
-
-	if vars["page"] != "" {
-		page, err = strconv.Atoi(vars["page"])
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		page = 1
-	}
-
-	if vars["limit"] != "" {
-		limit, err = strconv.Atoi(vars["limit"])
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		limit = 10
-	}
-
-	offset := (page * limit) - limit
-
-	// TODO: Change to use https://github.com/go-pg/pg
-	//  // Select all users.
-	//  var users []User
-	//  err = db.Model(&users).Select().Apply(pg.Pagination(r.URL.Query()))
-	//  if err != nil {
-	// 		panic(err)
-	//  }
-	rows, err := dbWrap.db.Query("SELECT * FROM repos LIMIT $1 OFFSET $2", limit, offset)
+	var repos []Repo
+	// err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
+	err := dbWrap.db.Model(&repos).Select()
 	if err != nil {
 		panic(err)
 	}
 
-	defer rows.Close()
-
-	var (
-		id   int
-		data string
-	)
-
 	// Build JSON of the form {"repos": [...]}
-	repos := make([]*string, limit)
-
-	i := 0
-	for rows.Next() {
-		err := rows.Scan(&id, &data)
-		if err != nil {
-			panic(err)
-		}
-		if id == 0 {
-			continue
-		}
-
-		repo := &Repo{id: id, data: data}
-
-		repos[i] = &repo.data
-		i++
+	mStrings := make([]*string, len(repos))
+	for idx, repo := range repos {
+		mStrings[idx] = &repo.Data
 	}
-	mJSON := buildModelJSON(repos)
+
+	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("repos", mJSON)
 
 	addResponseHeaders(w)
@@ -159,38 +87,18 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	// TODO: Change to use https://github.com/go-pg/pg
-	//  // Select user by primary key.
-	//  user := User{Id: user1.Id}
-	//  err = db.Select(&user)
-	//  if err != nil {
-	// 		panic(err)
-	//  }
-	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE id = $1", id)
+	pull := Pull{Id: id}
+	err = dbWrap.db.Select(&pull)
 	if err != nil {
 		panic(err)
 	}
 
-	defer rows.Close()
-
-	var data, repoID string
-
-	rows.Next()
-	err = rows.Scan(&id, &data, &repoID)
-	if err != nil {
-		panic(err)
-	}
-	if id == 0 {
-		return
-	}
-
-	p := &Pull{id: id, data: data}
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
-	pullStrings := make([]*string, 1)
-	pullStrings[0] = &p.data
+	mStrings := make([]*string, 1)
+	mStrings[0] = &pull.Data
 
-	mJSON := buildModelJSON(pullStrings)
+	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("pulls", mJSON)
 
 	addResponseHeaders(w)
@@ -200,90 +108,33 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 // GetPulls is a function handler that retrieves a set of PR's from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
-	// Apply defaults of page 1, limit 10, and repoID 10270250 (React)
-	var (
-		page, limit, repoID int
-		err                 error
-	)
-
-	if vars["page"] != "" {
-		page, err = strconv.Atoi(vars["page"])
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		page = 1
-	}
-
-	if vars["limit"] != "" {
-		limit, err = strconv.Atoi(vars["limit"])
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		limit = 10
-	}
-
-	if vars["repoID"] != "" {
-		repoID, err = strconv.Atoi(vars["repoID"])
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		// TODO: Remove default
-		repoID = 10270250
-	}
-
-	offset := (page * limit) - limit
-
-	// TODO: Change to use https://github.com/go-pg/pg
-	//  // Select all users.
-	//  var users []User
-	//  err = db.Model(&users).Select().Apply(pg.Pagination(r.URL.Query()))
-	//  if err != nil {
-	// 		panic(err)
-	//  }
-	rows, err := dbWrap.db.Query("SELECT * FROM pulls WHERE repo_id = $1 LIMIT $2 OFFSET $3", repoID, limit, offset)
+	repoID, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
 		panic(err)
 	}
 
-	defer rows.Close()
-
-	var (
-		id   int
-		data string
-	)
-
-	// Build JSON of the form {"pulls": [...]}
-	pulls := make([]*string, limit)
-
-	i := 0
-	for rows.Next() {
-		err := rows.Scan(&id, &data, &repoID)
-		if err != nil {
-			panic(err)
-		}
-		if id == 0 {
-			continue
-		}
-
-		p := &Pull{id: id, data: data}
-
-		pulls[i] = &p.data
-		i++
+	var pulls []Pull
+	err = dbWrap.db.Model(&pulls).
+		Where("pull.repo_id = ?", repoID).
+		Apply(orm.Pagination(r.URL.Query())).
+		Select()
+	if err != nil {
+		panic(err)
 	}
 
-	mJSON := buildModelJSON(pulls)
+	// Build JSON of the form {"pulls": [...]}
+	mStrings := make([]*string, len(pulls))
+	for idx, pull := range pulls {
+		mStrings[idx] = &pull.Data
+	}
+
+	mJSON := buildModelJSON(mStrings)
 	response := wrapModelJSON("pulls", mJSON)
 
 	addResponseHeaders(w)
 	w.Write(response)
 }
 
-// TODO: Remove these. The only struct-based solution I could find
-// would require unmarshalling and then marshalling back to JSON
 func buildModelJSON(modelStrings []*string) []byte {
 	var buffer bytes.Buffer
 
@@ -319,25 +170,13 @@ func addResponseHeaders(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func connectionInfo() string {
-	var buffer bytes.Buffer
-
-	buffer.WriteString("user=")
-	user := os.Getenv("DEFAULT_POSTGRES_USER")
-	buffer.WriteString(user)
-	buffer.WriteString(" dbname=cleopatchra sslmode=disable")
-
-	return buffer.String()
-}
-
 // OpenDb initializes and returns a pointer to a Wrapper struct
 func OpenDb() *Wrapper {
-	connInfo := connectionInfo()
-
-	db, err := sql.Open("postgres", connInfo)
-	if err != nil {
-		panic(err)
-	}
+	user := os.Getenv("DEFAULT_POSTGRES_USER")
+	db := pg.Connect(&pg.Options{
+		User:     user,
+		Database: "cleopatchra",
+	})
 
 	return &Wrapper{db: db}
 }

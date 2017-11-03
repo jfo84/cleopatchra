@@ -1,12 +1,18 @@
-hash: d7cedb4f053006b44306a125ce0651a2df45d7f7f9af94a4cfa9e86e888399a0
-updated: 2017-10-25T19:56:13.993901508+02:00
+hash: e12955149186408ed2e2f871816e470371fc6e7517aa2f9e7131c7967720b712
+updated: 2017-11-03T11:01:58.676843591+01:00
 imports:
+- name: github.com/go-pg/pg
+  version: c2c9b3c1cb6dcc2eac1269d1557aeee791312a1c
+  subpackages:
+  - internal
+  - internal/parser
+  - internal/pool
+  - orm
+  - types
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
-- name: github.com/lib/pq
-  version: b609790bd85edf8e9ab7e0f8912750a786177bcf
-  subpackages:
-  - oid
+- name: github.com/jinzhu/inflection
+  version: 1c35d901db3da928c72a72d8458480cc9ade058f
 testImports: []

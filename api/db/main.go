@@ -2,11 +2,9 @@ package db
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
@@ -178,15 +176,6 @@ func OpenDb() *Wrapper {
 	db := pg.Connect(&pg.Options{
 		User:     user,
 		Database: "cleopatchra",
-	})
-
-	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("%s %s", time.Since(event.StartTime), query)
 	})
 
 	return &Wrapper{db: db}

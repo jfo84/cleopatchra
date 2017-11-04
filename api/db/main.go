@@ -16,8 +16,13 @@ type Wrapper struct {
 	db *pg.DB
 }
 
-// TODO: Combine these types?? Much of the code for iterating through pulls/repos
-// could be generalized if this was done. Feels too early to do so now
+// Comment represents a comment on a Github pull request
+type Comment struct {
+	ID     int
+	Data   string
+	PullID int
+	Pull   *Pull
+}
 
 // Pull represents a Github pull request
 type Pull struct {
@@ -26,14 +31,6 @@ type Pull struct {
 	RepoID   int
 	Repo     *Repo
 	Comments []*Comment
-}
-
-// Comment represents a comment on a Github pull request
-type Comment struct {
-	ID     int
-	Data   string
-	PullID int
-	Pull   *Pull
 }
 
 // Repo represents a Github repository

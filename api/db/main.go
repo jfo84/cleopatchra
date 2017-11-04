@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,49 +17,80 @@ type Wrapper struct {
 	db *pg.DB
 }
 
+// DataWrapper is a wrapper over string for passing through JSON string values during marshalling
+type DataWrapper struct {
+	Data string
+}
+
 // Comment represents a comment on a Github pull request
 type Comment struct {
-	ID     int
-	Data   string
-	PullID int
-	Pull   *Pull
+	ID     int          `json:"id"`
+	Data   *DataWrapper `json:"data"`
+	PullID int          `json:"pull_id"`
+	Pull   *Pull        `json:"pull"`
 }
 
 // Pull represents a Github pull request
 type Pull struct {
-	ID       int
-	Data     string
-	RepoID   int
-	Repo     *Repo
-	Comments []*Comment
+	ID       int          `json:"id"`
+	Data     *DataWrapper `json:"data"`
+	RepoID   int          `json:"repo_id"`
+	Repo     *Repo        `json:"repo"`
+	Comments []*Comment   `json:"comments"`
 }
 
 // Repo represents a Github repository
 type Repo struct {
-	ID   int
-	Data string
+	ID   int          `json:"id"`
+	Data *DataWrapper `json:"data"`
+}
+
+// NewComment is for initializing a Comment with a DataWrapper
+func NewComment(ID int, Data string, PullID int) *Comment {
+	return &Comment{
+		ID:     ID,
+		Data:   &DataWrapper{Data: Data},
+		PullID: PullID,
+	}
+}
+
+// NewPull is for initializing a Pull with a DataWrapper
+func NewPull(ID int, Data string, RepoID int) *Pull {
+	return &Pull{
+		ID:     ID,
+		Data:   &DataWrapper{Data: Data},
+		RepoID: RepoID,
+	}
+}
+
+// NewRepo is for initializing a Repo with a DataWrapper
+func NewRepo(ID int, Data string) *Repo {
+	return &Repo{
+		ID:   ID,
+		Data: &DataWrapper{Data: Data},
+	}
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["repoID"])
+	ID, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
 		panic(err)
 	}
 
-	repo := Repo{ID: id}
+	repo := Repo{ID: ID}
 	err = dbWrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
 	}
 
 	// In order to keep the builder interface agnostic, I need to
-	// generate a one-dimensional []*string for buildModelJSON
-	mStrings := make([]*string, 1)
-	mStrings[0] = &repo.Data
+	// generate a one-dimensional []interface{} for wrapModelJSON
+	models := make([]interface{}, 1)
+	models[0] = &repo
 
-	mJSON := buildModelJSON(mStrings)
+	mJSON := buildModelJSON(models)
 	response := wrapModelJSON("repos", mJSON)
 
 	addResponseHeaders(w)
@@ -76,12 +108,12 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build JSON of the form {"repos": [...]}
-	mStrings := make([]*string, len(repos))
+	models := make([]interface{}, len(repos))
 	for idx, repo := range repos {
-		mStrings[idx] = &repo.Data
+		models[idx] = &repo
 	}
 
-	mJSON := buildModelJSON(mStrings)
+	mJSON := buildModelJSON(models)
 	response := wrapModelJSON("repos", mJSON)
 
 	addResponseHeaders(w)
@@ -91,23 +123,26 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 // GetPull is a function handler that retrieves a particular PR from the DB and writes it with the responseWriter
 func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["pullID"])
+	ID, err := strconv.Atoi(vars["pullID"])
 	if err != nil {
 		panic(err)
 	}
 
-	pull := Pull{ID: id}
-	err = dbWrap.db.Select(&pull)
+	var pull Pull
+	err = dbWrap.db.Model(&pull).
+		Column("pull.*", "Comments").
+		Where("pull.id = ?", ID).
+		Select()
 	if err != nil {
 		panic(err)
 	}
 
 	// In order to keep the builder interface agnostic, I need to
 	// generate a one-dimensional []*string for buildModelJSON
-	mStrings := make([]*string, 1)
-	mStrings[0] = &pull.Data
+	models := make([]interface{}, 1)
+	models[0] = &pull
 
-	mJSON := buildModelJSON(mStrings)
+	mJSON := buildModelJSON(models)
 	response := wrapModelJSON("pulls", mJSON)
 
 	addResponseHeaders(w)
@@ -131,29 +166,37 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	// Build JSON of the form {"pulls": [...]}
-	mStrings := make([]*string, len(pulls))
+	models := make([]interface{}, len(pulls))
 	for idx, pull := range pulls {
-		mStrings[idx] = &pull.Data
+		models[idx] = &pull
 	}
 
-	mJSON := buildModelJSON(mStrings)
+	mJSON := buildModelJSON(models)
 	response := wrapModelJSON("pulls", mJSON)
 
 	addResponseHeaders(w)
 	w.Write(response)
 }
 
-func buildModelJSON(modelStrings []*string) []byte {
+// MarshalJSON override to keep from re-marshalling the data JSON string
+func (dWrap *DataWrapper) MarshalJSON() ([]byte, error) {
+	return []byte(dWrap.Data), nil
+}
+
+func buildModelJSON(models []interface{}) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
-	for idx, modelString := range modelStrings {
-		if modelString != nil {
+	for idx, model := range models {
+		if model != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(*modelString)
+			mJSON, err := json.Marshal(model)
+			if err != nil {
+				continue
+			}
+			buffer.Write(mJSON)
 		}
 	}
 	buffer.WriteString(`]`)

@@ -14,7 +14,7 @@ var PullFactory = factory.NewFactory(
 	&Pull{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
-}).Attr("Name", func(args factory.Args) (interface{}, error) {
+}).Attr("Data", func(args factory.Args) (interface{}, error) {
 	pull := args.Instance().(*Pull)
 	return fmt.Sprintf("pull-%d", pull.ID), nil
 }).OnCreate(func(args factory.Args) error {
@@ -26,7 +26,7 @@ var RepoFactory = factory.NewFactory(
 	&Repo{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
-}).Attr("Name", func(args factory.Args) (interface{}, error) {
+}).Attr("Data", func(args factory.Args) (interface{}, error) {
 	repo := args.Instance().(*Repo)
 	return fmt.Sprintf("repo-%d", repo.ID), nil
 }).OnCreate(func(args factory.Args) error {
@@ -60,7 +60,8 @@ func createTestSchema(db *pg.DB) error {
 
 func openDB() *pg.DB {
 	db := pg.Connect(&pg.Options{
-		User: "postgres",
+		User:     "postgres",
+		Database: "cleopatchra_test",
 	})
 
 	err := createTestSchema(db)

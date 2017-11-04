@@ -21,10 +21,19 @@ type Wrapper struct {
 
 // Pull represents a Github pull request
 type Pull struct {
+	ID       int
+	Data     string
+	RepoID   int
+	Repo     *Repo
+	Comments []*Comment
+}
+
+// Comment represents a comment on a Github pull request
+type Comment struct {
 	ID     int
 	Data   string
-	RepoID int
-	Repo   *Repo
+	PullID int
+	Pull   *Pull
 }
 
 // Repo represents a Github repository
@@ -62,7 +71,9 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	var repos []Repo
-	err := dbWrap.db.Model(&repos).Apply(orm.Pagination(r.URL.Query())).Select()
+	err := dbWrap.db.Model(&repos).
+		Apply(orm.Pagination(r.URL.Query())).
+		Select()
 	if err != nil {
 		panic(err)
 	}

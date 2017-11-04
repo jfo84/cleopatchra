@@ -17,58 +17,67 @@ type Wrapper struct {
 	db *pg.DB
 }
 
-// DataWrapper is a wrapper over string for passing through JSON string values during marshalling
-type DataWrapper struct {
+type comment struct {
+	ID     int
+	Data   string
+	pullID int
+	pull   *pull
+}
+
+// Comment represents the sliced version of a Github comment
+type Comment struct {
+	id               int
+	body             string
+	position         int
+	originalPosition int
+	user             *User
+}
+
+type pull struct {
+	ID       int
+	Data     string
+	repoID   int
+	repo     *repo
+	comments []*comment
+}
+
+// Pull represents the sliced version of a Github pull request
+type Pull struct {
+	id       int
+	number   int
+	title    string
+	body     string
+	merged   bool
+	user     *User
+	repo     *Repo
+	comments *Comment
+}
+
+// User represents a user in GitHub
+type User struct {
+	id    int
+	login string
+}
+
+type repo struct {
+	ID   int
 	Data string
 }
 
-// Comment represents a comment on a Github pull request
-type Comment struct {
-	ID     int          `json:"id"`
-	Data   *DataWrapper `json:"data"`
-	PullID int          `json:"pull_id"`
-	Pull   *Pull        `json:"pull"`
-}
-
-// Pull represents a Github pull request
-type Pull struct {
-	ID       int          `json:"id"`
-	Data     *DataWrapper `json:"data"`
-	RepoID   int          `json:"repo_id"`
-	Repo     *Repo        `json:"repo"`
-	Comments []*Comment   `json:"comments"`
-}
-
-// Repo represents a Github repository
+// Repo represents the sliced version of a Github repository
 type Repo struct {
-	ID   int          `json:"id"`
-	Data *DataWrapper `json:"data"`
+	id            int
+	name          string
+	fullName      string
+	description   string
+	watchersCount int
+	language      string
+	owner         *Owner
 }
 
-// NewComment is for initializing a Comment with a DataWrapper
-func NewComment(ID int, Data string, PullID int) *Comment {
-	return &Comment{
-		ID:     ID,
-		Data:   &DataWrapper{Data: Data},
-		PullID: PullID,
-	}
-}
-
-// NewPull is for initializing a Pull with a DataWrapper
-func NewPull(ID int, Data string, RepoID int) *Pull {
-	return &Pull{
-		ID:     ID,
-		Data:   &DataWrapper{Data: Data},
-		RepoID: RepoID,
-	}
-}
-
-// NewRepo is for initializing a Repo with a DataWrapper
-func NewRepo(ID int, Data string) *Repo {
-	return &Repo{
-		ID:   ID,
-		Data: &DataWrapper{Data: Data},
-	}
+// Owner represents the owner of a Repo
+type Owner struct {
+	id int
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
@@ -79,19 +88,23 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	repo := Repo{ID: ID}
-	err = dbWrap.db.Select(&repo)
+	repoDB := repo{ID: ID}
+	err = dbWrap.db.Select(&repoDB)
 	if err != nil {
 		panic(err)
 	}
 
-	// In order to keep the builder interface agnostic, I need to
-	// generate a one-dimensional []interface{} for wrapModelJSON
-	models := make([]interface{}, 1)
-	models[0] = &repo
+	var repo *Repo
+	dataBytes := []byte(repoDB.Data)
+	err = json.Unmarshal(dataBytes, &repo)
+	if err != nil {
+		panic(err)
+	}
 
-	mJSON := buildModelJSON(models)
-	response := wrapModelJSON("repos", mJSON)
+	repos := make([]*Repo, 1)
+	repos[0] = repo
+
+	response := buildRepoJSON(repos)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -99,22 +112,27 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
-	var repos []Repo
-	err := dbWrap.db.Model(&repos).
+	var repoDBs []repo
+	err := dbWrap.db.Model(&repoDBs).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
 	if err != nil {
 		panic(err)
 	}
 
+	repos := make([]*Repo, len(repoDBs))
 	// Build JSON of the form {"repos": [...]}
-	models := make([]interface{}, len(repos))
-	for idx, repo := range repos {
-		models[idx] = &repo
+	for idx, repoDB := range repoDBs {
+		var repo *Repo
+		dataBytes := []byte(repoDB.Data)
+		err = json.Unmarshal(dataBytes, &repo)
+		if err != nil {
+			panic(err)
+		}
+		repos[idx] = repo
 	}
 
-	mJSON := buildModelJSON(models)
-	response := wrapModelJSON("repos", mJSON)
+	response := buildRepoJSON(repos)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -128,8 +146,8 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var pull Pull
-	err = dbWrap.db.Model(&pull).
+	var pullDB pull
+	err = dbWrap.db.Model(&pullDB).
 		Column("pull.*", "Comments").
 		Where("pull.id = ?", ID).
 		Select()
@@ -137,13 +155,17 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	// In order to keep the builder interface agnostic, I need to
-	// generate a one-dimensional []*string for buildModelJSON
-	models := make([]interface{}, 1)
-	models[0] = &pull
+	var pull *Pull
+	dataBytes := []byte(pullDB.Data)
+	err = json.Unmarshal(dataBytes, &pull)
+	if err != nil {
+		panic(err)
+	}
 
-	mJSON := buildModelJSON(models)
-	response := wrapModelJSON("pulls", mJSON)
+	pulls := make([]*Pull, 1)
+	pulls[0] = pull
+
+	response := buildPullJSON(pulls)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -157,8 +179,8 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var pulls []Pull
-	err = dbWrap.db.Model(&pulls).
+	var pullDBs []pull
+	err = dbWrap.db.Model(&pullDBs).
 		Where("pull.repo_id = ?", repoID).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
@@ -166,42 +188,68 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	models := make([]interface{}, len(pulls))
-	for idx, pull := range pulls {
-		models[idx] = &pull
+	pulls := make([]*Pull, len(pullDBs))
+	// Build JSON of the form {"pulls": [...]}
+	for idx, pullDB := range pullDBs {
+		var pull *Pull
+		dataBytes := []byte(pullDB.Data)
+		err = json.Unmarshal(dataBytes, &pull)
+		if err != nil {
+			panic(err)
+		}
+		pulls[idx] = pull
 	}
 
-	mJSON := buildModelJSON(models)
-	response := wrapModelJSON("pulls", mJSON)
+	response := buildPullJSON(pulls)
 
 	addResponseHeaders(w)
 	w.Write(response)
 }
 
-// MarshalJSON override to keep from re-marshalling the data JSON string
-func (dWrap *DataWrapper) MarshalJSON() ([]byte, error) {
-	return []byte(dWrap.Data), nil
-}
-
-func buildModelJSON(models []interface{}) []byte {
+func buildRepoJSON(repos []*Repo) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
-	for idx, model := range models {
-		if model != nil {
+	for idx, repo := range repos {
+		if repo != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
-			mJSON, err := json.Marshal(model)
+			rJSON, err := json.Marshal(repo)
 			if err != nil {
 				continue
 			}
-			buffer.Write(mJSON)
+			buffer.Write(rJSON)
 		}
 	}
 	buffer.WriteString(`]`)
 
-	return buffer.Bytes()
+	repoBytes := wrapModelJSON("repos", buffer.Bytes())
+
+	return repoBytes
+}
+
+func buildPullJSON(pulls []*Pull) []byte {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`[`)
+	for idx, pull := range pulls {
+		if pull != nil {
+			if idx != 0 {
+				buffer.WriteString(",")
+			}
+			pJSON, err := json.Marshal(pull)
+			if err != nil {
+				continue
+			}
+			buffer.Write(pJSON)
+		}
+	}
+	buffer.WriteString(`]`)
+
+	pullBytes := wrapModelJSON("pulls", buffer.Bytes())
+
+	return pullBytes
 }
 
 func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {

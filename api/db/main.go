@@ -17,55 +17,55 @@ type Wrapper struct {
 	db *pg.DB
 }
 
-type comment struct {
+type Comment struct {
 	ID     int
 	Data   string
-	pullID int
-	pull   *pull
+	PullID int
+	Pull   *Pull
 }
 
 // Comment represents the sliced version of a Github comment
-type Comment struct {
+type EComment struct {
 	id               int
 	body             string
 	position         int
 	originalPosition int
-	user             *User
+	user             *EUser
 }
 
-type pull struct {
+type Pull struct {
 	ID       int
 	Data     string
-	repoID   int
-	repo     *repo
-	comments []*comment
+	RepoID   int
+	Repo     *Repo
+	Comments []*Comment
 }
 
 // Pull represents the sliced version of a Github pull request
-type Pull struct {
-	id       int
-	number   int
-	title    string
-	body     string
-	merged   bool
-	user     *User
-	repo     *Repo
-	comments *Comment
+type EPull struct {
+	Id       int
+	Number   int
+	Title    string
+	Body     string
+	Merged   bool
+	User     *EUser
+	Repo     *ERepo
+	Comments []*EComment
 }
 
 // User represents a user in GitHub
-type User struct {
+type EUser struct {
 	id    int
 	login string
 }
 
-type repo struct {
+type Repo struct {
 	ID   int
 	Data string
 }
 
 // Repo represents the sliced version of a Github repository
-type Repo struct {
+type ERepo struct {
 	id            int
 	name          string
 	fullName      string
@@ -88,21 +88,21 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	repoDB := repo{ID: ID}
-	err = dbWrap.db.Select(&repoDB)
+	repo := Repo{ID: ID}
+	err = dbWrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
 	}
 
-	var repo *Repo
-	dataBytes := []byte(repoDB.Data)
-	err = json.Unmarshal(dataBytes, &repo)
+	var eRepo ERepo
+	dataBytes := []byte(repo.Data)
+	err = json.Unmarshal(dataBytes, &eRepo)
 	if err != nil {
 		panic(err)
 	}
 
-	repos := make([]*Repo, 1)
-	repos[0] = repo
+	repos := make([]ERepo, 1)
+	repos[0] = eRepo
 
 	response := buildRepoJSON(repos)
 
@@ -112,27 +112,27 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
 func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
-	var repoDBs []repo
-	err := dbWrap.db.Model(&repoDBs).
+	var repos []Repo
+	err := dbWrap.db.Model(&repos).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
 	if err != nil {
 		panic(err)
 	}
 
-	repos := make([]*Repo, len(repoDBs))
+	eRepos := make([]ERepo, len(repos))
 	// Build JSON of the form {"repos": [...]}
-	for idx, repoDB := range repoDBs {
-		var repo *Repo
-		dataBytes := []byte(repoDB.Data)
-		err = json.Unmarshal(dataBytes, &repo)
+	for idx, repo := range repos {
+		var eRepo ERepo
+		dataBytes := []byte(repo.Data)
+		err = json.Unmarshal(dataBytes, &eRepo)
 		if err != nil {
 			panic(err)
 		}
-		repos[idx] = repo
+		eRepos[idx] = eRepo
 	}
 
-	response := buildRepoJSON(repos)
+	response := buildRepoJSON(eRepos)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -146,8 +146,8 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var pullDB pull
-	err = dbWrap.db.Model(&pullDB).
+	var pull Pull
+	err = dbWrap.db.Model(&pull).
 		Column("pull.*", "Comments").
 		Where("pull.id = ?", ID).
 		Select()
@@ -155,15 +155,15 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var pull *Pull
-	dataBytes := []byte(pullDB.Data)
-	err = json.Unmarshal(dataBytes, &pull)
+	var ePull EPull
+	dataBytes := []byte(pull.Data)
+	err = json.Unmarshal(dataBytes, &ePull)
 	if err != nil {
 		panic(err)
 	}
 
-	pulls := make([]*Pull, 1)
-	pulls[0] = pull
+	pulls := make([]EPull, 1)
+	pulls[0] = ePull
 
 	response := buildPullJSON(pulls)
 
@@ -179,8 +179,8 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var pullDBs []pull
-	err = dbWrap.db.Model(&pullDBs).
+	var pulls []Pull
+	err = dbWrap.db.Model(&pulls).
 		Where("pull.repo_id = ?", repoID).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
@@ -188,30 +188,30 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	pulls := make([]*Pull, len(pullDBs))
+	ePulls := make([]EPull, len(pulls))
 	// Build JSON of the form {"pulls": [...]}
-	for idx, pullDB := range pullDBs {
-		var pull *Pull
-		dataBytes := []byte(pullDB.Data)
-		err = json.Unmarshal(dataBytes, &pull)
+	for idx, pull := range pulls {
+		var ePull EPull
+		dataBytes := []byte(pull.Data)
+		err = json.Unmarshal(dataBytes, &ePull)
 		if err != nil {
 			panic(err)
 		}
 		pulls[idx] = pull
 	}
 
-	response := buildPullJSON(pulls)
+	response := buildPullJSON(ePulls)
 
 	addResponseHeaders(w)
 	w.Write(response)
 }
 
-func buildRepoJSON(repos []*Repo) []byte {
+func buildRepoJSON(repos []ERepo) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
 	for idx, repo := range repos {
-		if repo != nil {
+		if &repo != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
@@ -229,12 +229,12 @@ func buildRepoJSON(repos []*Repo) []byte {
 	return repoBytes
 }
 
-func buildPullJSON(pulls []*Pull) []byte {
+func buildPullJSON(pulls []EPull) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
 	for idx, pull := range pulls {
-		if pull != nil {
+		if &pull != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}

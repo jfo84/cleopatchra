@@ -17,6 +17,7 @@ type Wrapper struct {
 	db *pg.DB
 }
 
+// Comment represents the database version of a GitHub comment
 type Comment struct {
 	ID     int
 	Data   string
@@ -24,15 +25,16 @@ type Comment struct {
 	Pull   *Pull
 }
 
-// Comment represents the sliced version of a Github comment
+// EComment represents the exported version of a GitHub comment
 type EComment struct {
-	id               int
-	body             string
-	position         int
-	originalPosition int
-	user             *EUser
+	ID               int    `json:"id"`
+	Body             string `json:"body"`
+	Position         int    `json:"position"`
+	OriginalPosition int    `json:"original_position"`
+	User             *EUser `json:"user"`
 }
 
+// Pull represents the database version of a GitHub pull request
 type Pull struct {
 	ID       int
 	Data     string
@@ -41,43 +43,43 @@ type Pull struct {
 	Comments []*Comment
 }
 
-// Pull represents the sliced version of a Github pull request
+// EPull represents the exported version of a Github pull request
 type EPull struct {
-	Id       int
-	Number   int
-	Title    string
-	Body     string
-	Merged   bool
-	User     *EUser
-	Repo     *ERepo
-	Comments []*EComment
+	ID     int    `json:"id"`
+	Number int    `json:"number"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+	Merged bool   `json:"merged"`
+	User   *EUser `json:"user"`
+	Repo   *ERepo `json:"repo"`
 }
 
-// User represents a user in GitHub
+// EUser represents the exported version of a user in GitHub
 type EUser struct {
-	id    int
-	login string
+	ID    int    `json:"id"`
+	Login string `json:"login"`
 }
 
+// Repo represents the database version of a GitHub repository
 type Repo struct {
 	ID   int
 	Data string
 }
 
-// Repo represents the sliced version of a Github repository
+// ERepo represents the exported version of a GitHub repository
 type ERepo struct {
-	id            int
-	name          string
-	fullName      string
-	description   string
-	watchersCount int
-	language      string
-	owner         *Owner
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	FullName      string  `json:"full_name"`
+	Description   string  `json:"description"`
+	WatchersCount int     `json:"watchers_count"`
+	Language      string  `json:"language"`
+	Owner         *EOwner `json:"owner"`
 }
 
-// Owner represents the owner of a Repo
-type Owner struct {
-	id int
+// EOwner represents the exported version of a GitHub repository
+type EOwner struct {
+	ID int `json:"id"`
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
@@ -95,8 +97,8 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var eRepo ERepo
-	dataBytes := []byte(repo.Data)
-	err = json.Unmarshal(dataBytes, &eRepo)
+	repoBytes := []byte(repo.Data)
+	err = json.Unmarshal(repoBytes, &eRepo)
 	if err != nil {
 		panic(err)
 	}
@@ -156,8 +158,21 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var ePull EPull
-	dataBytes := []byte(pull.Data)
-	err = json.Unmarshal(dataBytes, &ePull)
+	// var commentData []string
+	// comments := pull.Comments
+	// var buffer bytes.Buffer
+	// for idx, comment := range comments {
+	// 	commentData[idx] = comment.Data
+	// }
+	// wrapModelJSON("comments", buffer.Bytes())
+	// commentBytes := []byte(commentData)
+	// err = json.Unmarshal(commentBytes, &ePull)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	pullBytes := []byte(pull.Data)
+	err = json.Unmarshal(pullBytes, &ePull)
 	if err != nil {
 		panic(err)
 	}

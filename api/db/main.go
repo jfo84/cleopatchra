@@ -158,29 +158,29 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var ePull EPull
-	// var commentData []string
-	// comments := pull.Comments
-	// var buffer bytes.Buffer
-	// for idx, comment := range comments {
-	// 	commentData[idx] = comment.Data
-	// }
-	// wrapModelJSON("comments", buffer.Bytes())
-	// commentBytes := []byte(commentData)
-	// err = json.Unmarshal(commentBytes, &ePull)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	pullBytes := []byte(pull.Data)
 	err = json.Unmarshal(pullBytes, &ePull)
 	if err != nil {
 		panic(err)
 	}
 
-	pulls := make([]EPull, 1)
-	pulls[0] = ePull
+	ePulls := make([]EPull, 1)
+	ePulls[0] = ePull
 
-	response := buildPullJSON(pulls)
+	comments := pull.Comments
+	var eComments []EComment
+	// Build JSON of the form {"comments": [...]}
+	for idx, comment := range comments {
+		var eComment EComment
+		commentBytes := []byte(comment.Data)
+		err = json.Unmarshal(commentBytes, &eComment)
+		if err != nil {
+			panic(err)
+		}
+		eComments[idx] = eComment
+	}
+
+	response := buildPullJSON(ePulls, eComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -204,8 +204,12 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ePulls := make([]EPull, len(pulls))
-	// Build JSON of the form {"pulls": [...]}
+	pullComments := pull.Comments
+	// TODO: Find length of comment slice (all comments for all pulls)
+	// eComments := make([]EComment, len(pullComments))
+
 	for idx, pull := range pulls {
+		// Build JSON of the form {"pulls": [...]}
 		var ePull EPull
 		dataBytes := []byte(pull.Data)
 		err = json.Unmarshal(dataBytes, &ePull)
@@ -213,58 +217,88 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		pulls[idx] = pull
+
+		// Build JSON of the form {"comments": [...]}
+		for comment := range comments {
+			var eComment EComment
+			commentBytes := []byte(comment.Data)
+			err = json.Unmarshal(commentBytes, &eComment)
+			if err != nil {
+				panic(err)
+			}
+			eComments[idx] = eComment
+		}
 	}
 
-	response := buildPullJSON(ePulls)
+	response := buildPullJSON(ePulls, eComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
 }
 
-func buildRepoJSON(repos []ERepo) []byte {
+// The builder functions have identical implementations except for the
+// value passed into WrapModelJSON. Interfaces are more expensive
+func buildRepoJSON(models []ERepo) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
-	for idx, repo := range repos {
-		if &repo != nil {
+	for idx, model := range models {
+		if &model != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
-			rJSON, err := json.Marshal(repo)
+			mJSON, err := json.Marshal(model)
 			if err != nil {
 				continue
 			}
-			buffer.Write(rJSON)
+			buffer.Write(mJSON)
 		}
 	}
 	buffer.WriteString(`]`)
 
-	repoBytes := wrapModelJSON("repos", buffer.Bytes())
-
-	return repoBytes
+	return wrapModelJSON("repos", buffer.Bytes())
 }
 
-func buildPullJSON(pulls []EPull) []byte {
+func buildPullJSON(models []EPull, comments []EComment) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
-	for idx, pull := range pulls {
-		if &pull != nil {
+	for idx, model := range models {
+		if &model != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
-			pJSON, err := json.Marshal(pull)
+			mJSON, err := json.Marshal(model)
 			if err != nil {
 				continue
 			}
-			buffer.Write(pJSON)
+			buffer.Write(mJSON)
 		}
 	}
 	buffer.WriteString(`]`)
 
-	pullBytes := wrapModelJSON("pulls", buffer.Bytes())
+	return wrapModelJSON("pulls", buffer.Bytes())
+}
 
-	return pullBytes
+func buildCommentJSON(models []EComment) []byte {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`[`)
+	for idx, model := range models {
+		if &model != nil {
+			if idx != 0 {
+				buffer.WriteString(",")
+			}
+			mJSON, err := json.Marshal(model)
+			if err != nil {
+				continue
+			}
+			buffer.Write(mJSON)
+		}
+	}
+	buffer.WriteString(`]`)
+
+	return wrapModelJSON("comments", buffer.Bytes())
 }
 
 func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {

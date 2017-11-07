@@ -82,7 +82,6 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eRepos := make([]exports.Repo, len(repos))
-	// Build JSON of the form {"repos": [...]}
 	for idx, repo := range repos {
 		var eRepo exports.Repo
 		dataBytes := []byte(repo.Data)
@@ -155,7 +154,6 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	var allComments []exports.Comment
 
 	for idx, pull := range pulls {
-		// Build JSON of the form {"pulls": [...]}
 		var ePull exports.Pull
 		dataBytes := []byte(pull.Data)
 		err = json.Unmarshal(dataBytes, &ePull)
@@ -177,7 +175,6 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 func buildExportedComments(comments []*Comment) []exports.Comment {
 	eComments := make([]exports.Comment, len(comments))
-	// Build JSON of the form {"comments": [...]}
 	for idx, comment := range comments {
 		var eComment exports.Comment
 		commentBytes := []byte(comment.Data)

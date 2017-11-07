@@ -126,18 +126,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	ePulls := make([]exports.Pull, 1)
 	ePulls[0] = ePull
 
-	comments := pull.Comments
-	var eComments []exports.Comment
-	// Build JSON of the form {"comments": [...]}
-	for idx, comment := range comments {
-		var eComment exports.Comment
-		commentBytes := []byte(comment.Data)
-		err = json.Unmarshal(commentBytes, &eComment)
-		if err != nil {
-			panic(err)
-		}
-		eComments[idx] = eComment
-	}
+	eComments := buildExportedComments(pull.Comments)
 
 	response := buildPullJSON(ePulls, eComments)
 
@@ -175,19 +164,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		}
 		pulls[idx] = pull
 
-		// Build JSON of the form {"comments": [...]}
-		pullComments := pull.Comments
-		eComments := make([]exports.Comment, len(pullComments))
-
-		for cIdx, comment := range pullComments {
-			var eComment exports.Comment
-			commentBytes := []byte(comment.Data)
-			err = json.Unmarshal(commentBytes, &eComment)
-			if err != nil {
-				panic(err)
-			}
-			eComments[cIdx] = eComment
-		}
+		eComments := buildExportedComments(pull.Comments)
 
 		allComments = append(allComments, eComments...)
 	}
@@ -198,8 +175,21 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// The builder functions have identical implementations except for the
-// value passed into WrapModelJSON. Interfaces are more expensive
+func buildExportedComments(comments []*Comment) []exports.Comment {
+	eComments := make([]exports.Comment, len(comments))
+	// Build JSON of the form {"comments": [...]}
+	for idx, comment := range comments {
+		var eComment exports.Comment
+		commentBytes := []byte(comment.Data)
+		err := json.Unmarshal(commentBytes, &eComment)
+		if err != nil {
+			panic(err)
+		}
+		eComments[idx] = eComment
+	}
+	return eComments
+}
+
 func buildRepoJSON(models []exports.Repo) []byte {
 	var buffer bytes.Buffer
 
@@ -240,27 +230,6 @@ func buildPullJSON(models []exports.Pull, comments []exports.Comment) []byte {
 	buffer.WriteString(`]`)
 
 	return wrapModelJSON("pulls", buffer.Bytes())
-}
-
-func buildCommentJSON(models []exports.Comment) []byte {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`[`)
-	for idx, model := range models {
-		if &model != nil {
-			if idx != 0 {
-				buffer.WriteString(",")
-			}
-			mJSON, err := json.Marshal(model)
-			if err != nil {
-				continue
-			}
-			buffer.Write(mJSON)
-		}
-	}
-	buffer.WriteString(`]`)
-
-	return wrapModelJSON("comments", buffer.Bytes())
 }
 
 func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {

@@ -10,6 +10,7 @@ import (
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/gorilla/mux"
+	"github.com/jfo84/cleopatchra/api/exports"
 )
 
 // Wrapper is a wrapper over sql.DB
@@ -25,15 +26,6 @@ type Comment struct {
 	Pull   *Pull
 }
 
-// EComment represents the exported version of a GitHub comment
-type EComment struct {
-	ID               int    `json:"id"`
-	Body             string `json:"body"`
-	Position         int    `json:"position"`
-	OriginalPosition int    `json:"original_position"`
-	User             *EUser `json:"user"`
-}
-
 // Pull represents the database version of a GitHub pull request
 type Pull struct {
 	ID       int
@@ -43,43 +35,10 @@ type Pull struct {
 	Comments []*Comment
 }
 
-// EPull represents the exported version of a Github pull request
-type EPull struct {
-	ID     int    `json:"id"`
-	Number int    `json:"number"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	Merged bool   `json:"merged"`
-	User   *EUser `json:"user"`
-	Repo   *ERepo `json:"repo"`
-}
-
-// EUser represents the exported version of a user in GitHub
-type EUser struct {
-	ID    int    `json:"id"`
-	Login string `json:"login"`
-}
-
 // Repo represents the database version of a GitHub repository
 type Repo struct {
 	ID   int
 	Data string
-}
-
-// ERepo represents the exported version of a GitHub repository
-type ERepo struct {
-	ID            int     `json:"id"`
-	Name          string  `json:"name"`
-	FullName      string  `json:"full_name"`
-	Description   string  `json:"description"`
-	WatchersCount int     `json:"watchers_count"`
-	Language      string  `json:"language"`
-	Owner         *EOwner `json:"owner"`
-}
-
-// EOwner represents the exported version of a GitHub repository
-type EOwner struct {
-	ID int `json:"id"`
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
@@ -96,14 +55,14 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var eRepo ERepo
+	var eRepo exports.Repo
 	repoBytes := []byte(repo.Data)
 	err = json.Unmarshal(repoBytes, &eRepo)
 	if err != nil {
 		panic(err)
 	}
 
-	repos := make([]ERepo, 1)
+	repos := make([]exports.Repo, 1)
 	repos[0] = eRepo
 
 	response := buildRepoJSON(repos)
@@ -122,10 +81,10 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	eRepos := make([]ERepo, len(repos))
+	eRepos := make([]exports.Repo, len(repos))
 	// Build JSON of the form {"repos": [...]}
 	for idx, repo := range repos {
-		var eRepo ERepo
+		var eRepo exports.Repo
 		dataBytes := []byte(repo.Data)
 		err = json.Unmarshal(dataBytes, &eRepo)
 		if err != nil {
@@ -157,21 +116,21 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var ePull EPull
+	var ePull exports.Pull
 	pullBytes := []byte(pull.Data)
 	err = json.Unmarshal(pullBytes, &ePull)
 	if err != nil {
 		panic(err)
 	}
 
-	ePulls := make([]EPull, 1)
+	ePulls := make([]exports.Pull, 1)
 	ePulls[0] = ePull
 
 	comments := pull.Comments
-	var eComments []EComment
+	var eComments []exports.Comment
 	// Build JSON of the form {"comments": [...]}
 	for idx, comment := range comments {
-		var eComment EComment
+		var eComment exports.Comment
 		commentBytes := []byte(comment.Data)
 		err = json.Unmarshal(commentBytes, &eComment)
 		if err != nil {
@@ -203,14 +162,12 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	ePulls := make([]EPull, len(pulls))
-	pullComments := pull.Comments
-	// TODO: Find length of comment slice (all comments for all pulls)
-	// eComments := make([]EComment, len(pullComments))
+	ePulls := make([]exports.Pull, len(pulls))
+	var allComments []exports.Comment
 
 	for idx, pull := range pulls {
 		// Build JSON of the form {"pulls": [...]}
-		var ePull EPull
+		var ePull exports.Pull
 		dataBytes := []byte(pull.Data)
 		err = json.Unmarshal(dataBytes, &ePull)
 		if err != nil {
@@ -219,18 +176,23 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		pulls[idx] = pull
 
 		// Build JSON of the form {"comments": [...]}
-		for comment := range comments {
-			var eComment EComment
+		pullComments := pull.Comments
+		eComments := make([]exports.Comment, len(pullComments))
+
+		for cIdx, comment := range pullComments {
+			var eComment exports.Comment
 			commentBytes := []byte(comment.Data)
 			err = json.Unmarshal(commentBytes, &eComment)
 			if err != nil {
 				panic(err)
 			}
-			eComments[idx] = eComment
+			eComments[cIdx] = eComment
 		}
+
+		allComments = append(allComments, eComments...)
 	}
 
-	response := buildPullJSON(ePulls, eComments)
+	response := buildPullJSON(ePulls, allComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -238,7 +200,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 // The builder functions have identical implementations except for the
 // value passed into WrapModelJSON. Interfaces are more expensive
-func buildRepoJSON(models []ERepo) []byte {
+func buildRepoJSON(models []exports.Repo) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
@@ -259,7 +221,7 @@ func buildRepoJSON(models []ERepo) []byte {
 	return wrapModelJSON("repos", buffer.Bytes())
 }
 
-func buildPullJSON(models []EPull, comments []EComment) []byte {
+func buildPullJSON(models []exports.Pull, comments []exports.Comment) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)
@@ -280,7 +242,7 @@ func buildPullJSON(models []EPull, comments []EComment) []byte {
 	return wrapModelJSON("pulls", buffer.Bytes())
 }
 
-func buildCommentJSON(models []EComment) []byte {
+func buildCommentJSON(models []exports.Comment) []byte {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`[`)

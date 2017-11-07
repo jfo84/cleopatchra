@@ -1,6 +1,8 @@
-hash: e12955149186408ed2e2f871816e470371fc6e7517aa2f9e7131c7967720b712
-updated: 2017-11-03T11:01:58.676843591+01:00
+hash: 0b6c8bf07642eaf126a03de9794ddfbe1daa0536f2d9e84d30171006a0635746
+updated: 2017-11-07T12:44:34.401973377Z
 imports:
+- name: github.com/fatih/structs
+  version: a720dfa8df582c51dee1b36feabb906bde1588bd
 - name: github.com/go-pg/pg
   version: c2c9b3c1cb6dcc2eac1269d1557aeee791312a1c
   subpackages:
@@ -12,7 +14,11 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
+  version: 7f08801859139f86dfafd1c296e2cba9a80d292e
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
-testImports: []
+testImports:
+- name: github.com/bluele/factory-go
+  version: 1d928936c2ee62f4a0385db9842bc037bac527c1
+  subpackages:
+  - factory

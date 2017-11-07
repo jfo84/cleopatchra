@@ -7,13 +7,14 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/fatih/structs"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/exports"
 )
 
-// Wrapper is a wrapper over sql.DB
+// Wrapper is a wrapper over pg.DB
 type Wrapper struct {
 	db *pg.DB
 }
@@ -122,12 +123,20 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	ePulls := make([]exports.Pull, 1)
-	ePulls[0] = ePull
+	// Adding comment internal ID's to the payload to support Ember Data sideloading
+	commentIDs := make([]int, len(pull.Comments))
+	for idx, comment := range pull.Comments {
+		commentIDs[idx] = comment.ID
+	}
+	pullMap := structs.Map(ePull)
+	pullMap["comments"] = commentIDs
+
+	pullMaps := make([]map[string]interface{}, 1)
+	pullMaps[0] = pullMap
 
 	eComments := buildExportedComments(pull.Comments)
 
-	response := buildPullJSON(ePulls, eComments)
+	response := buildPullJSON(pullMaps, eComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -150,7 +159,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	ePulls := make([]exports.Pull, len(pulls))
+	pullMaps := make([]map[string]interface{}, len(pulls))
 	var allComments []exports.Comment
 
 	for idx, pull := range pulls {
@@ -160,14 +169,22 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		pulls[idx] = pull
+
+		// Adding comment internal ID's to the payload to support Ember Data sideloading
+		commentIDs := make([]int, len(pull.Comments))
+		for idx, comment := range pull.Comments {
+			commentIDs[idx] = comment.ID
+		}
+		pullMap := structs.Map(ePull)
+		pullMap["comments"] = commentIDs
+		pullMaps[idx] = pullMap
 
 		eComments := buildExportedComments(pull.Comments)
 
 		allComments = append(allComments, eComments...)
 	}
 
-	response := buildPullJSON(ePulls, allComments)
+	response := buildPullJSON(pullMaps, allComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
@@ -208,25 +225,45 @@ func buildRepoJSON(models []exports.Repo) []byte {
 	return wrapModelJSON("repos", buffer.Bytes())
 }
 
-func buildPullJSON(models []exports.Pull, comments []exports.Comment) []byte {
+func buildPullJSON(pulls []map[string]interface{}, comments []exports.Comment) []byte {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(`[`)
-	for idx, model := range models {
-		if &model != nil {
+	buffer.WriteString(`{"pulls":[`)
+	for idx, pull := range pulls {
+		if pull != nil {
 			if idx != 0 {
 				buffer.WriteString(",")
 			}
-			mJSON, err := json.Marshal(model)
+
+			pJSON, err := json.Marshal(pull)
 			if err != nil {
 				continue
 			}
-			buffer.Write(mJSON)
+
+			buffer.Write(pJSON)
 		}
 	}
 	buffer.WriteString(`]`)
+	buffer.WriteString(`,`)
+	buffer.WriteString(`"comments":[`)
+	for idx, comment := range comments {
+		if &comment != nil {
+			if idx != 0 {
+				buffer.WriteString(",")
+			}
 
-	return wrapModelJSON("pulls", buffer.Bytes())
+			cJSON, err := json.Marshal(comment)
+			if err != nil {
+				continue
+			}
+
+			buffer.Write(cJSON)
+		}
+	}
+	buffer.WriteString(`]`)
+	buffer.WriteString(`}`)
+
+	return buffer.Bytes()
 }
 
 func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {

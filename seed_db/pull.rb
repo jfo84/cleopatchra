@@ -13,4 +13,8 @@ class Pull
   def url
     data_hash['url']
   end
+
+  def comments_url
+    data_hash['comments_url']
+  end
 end

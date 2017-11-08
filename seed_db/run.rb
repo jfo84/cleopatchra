@@ -1,8 +1,8 @@
-require 'typhoeus'
 require 'json'
 require 'dotenv'
 require 'commander/import'
 
+require_relative './request'
 require_relative './repo'
 require_relative './pull'
 require_relative './comment'
@@ -36,7 +36,7 @@ def seed_repo(repo_external_id)
   current_page = 1
   loop do
     puts "Starting page #{current_page}..."
-    pulls_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_external_id}/pulls", 
+    pulls_request = Request.new("#{BASE_URL}/repos/#{repo_external_id}/pulls", 
       params: { page: current_page, state: 'all' },
       **BASE_OPTIONS
     )
@@ -63,7 +63,7 @@ def seed_repo(repo_external_id)
 end
 
 def record_repo(repo_external_id)
-  repo_request = Typhoeus::Request.new("#{BASE_URL}/repos/#{repo_external_id}", **BASE_OPTIONS)
+  repo_request = Request.new("#{BASE_URL}/repos/#{repo_external_id}", **BASE_OPTIONS)
   repo_request.run
   repo_hash = JSON.parse(repo_request.response.body)
   repo = Repo.new(data_hash: repo_hash)
@@ -73,7 +73,7 @@ end
 
 def record_pull(pull_url, repo_id)
   # I wish there was a better name for this ^_^
-  pull_request = Typhoeus::Request.new(pull_url, **BASE_OPTIONS)
+  pull_request = Request.new(pull_url, **BASE_OPTIONS)
   pull_request.run
   pull_hash = JSON.parse(pull_request.response.body)
   pull = Pull.new(data_hash: pull_hash, repo_id: repo_id)
@@ -83,18 +83,18 @@ def record_pull(pull_url, repo_id)
 end
 
 def record_comments(pull)
-  comments_request = Typhoeus::Request.new("#{pull.url}/comments", **BASE_OPTIONS)
+  comments_request = Request.new(pull.comments_url, **BASE_OPTIONS)
   comments_request.run
   comments = JSON.parse(comments_request.response.body)
 
   comments.each do |comment_hash|
     comment = Comment.new(data_hash: comment_hash, pull_id: pull.id)
-    comment.record
+    comment.record unless comment.is_dup?
   end
 end
 
 def record_reviews(pull)
-  reviews_request = Typhoeus::Request.new("#{pull.url}/reviews", **BASE_OPTIONS)
+  reviews_request = Request.new("#{pull.url}/reviews", **BASE_OPTIONS)
   reviews_request.run
   reviews = JSON.parse(reviews_request.response.body)
 

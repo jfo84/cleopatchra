@@ -1,11 +1,11 @@
-require 'typheous'
+require 'typhoeus'
 
 class Request
-  attr_reader :request
+  attr_reader :request, :limit_remaining, :limit_reset_time
   attr_writer :limit_remaining, :limit_reset_time
 
   def initialize(*args, &block)
-    @request = Typheous::Request.new(*args, &block)
+    @request = Typhoeus::Request.new(*args, &block)
     @limit_remaining = nil
     @limit_reset_time = nil
   end
@@ -17,7 +17,6 @@ class Request
     request.run
     limit_remaining = request.response.headers['X-RateLimit-Remaining'].to_i
     limit_reset_time = request.response.headers['X-RateLimit-Reset'].to_i
-    rate_limit
   end
 
   def response

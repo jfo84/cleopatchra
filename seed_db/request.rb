@@ -11,7 +11,7 @@ class Request
   end
 
   def run
-    wait_until_reset if limit_remaining < 5
+    wait_until_reset if limit_remaining && limit_remaining < 5
 
     request.run
     limit_remaining = request.response.headers['X-RateLimit-Remaining'].to_i

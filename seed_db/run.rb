@@ -51,9 +51,6 @@ def seed_repo(repo_external_id)
       next if pull.is_dup?
       record_comments(pull)
       record_reviews(pull)
-      # Safeguard to avoid rate limits. I don't want to deal with the empty responses
-      # Limit is 5000/min
-      sleep 0.5
     end
   
     break if pull_urls.length < 30

@@ -11,7 +11,7 @@ class Request
   end
 
   def run
-    if limit_remaining === 0
+    if limit_remaining < 5
       wait_until_reset
     end
     request.run

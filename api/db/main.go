@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/fatih/structs"
 	"github.com/go-pg/pg"
@@ -159,32 +160,42 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	// Build pull exports concurrently
+	wg := &sync.WaitGroup{}
 	pullMaps := make([]map[string]interface{}, len(pulls))
-	var allComments []exports.Comment
+	var eComments []exports.Comment
 
 	for idx, pull := range pulls {
-		var ePull exports.Pull
-		dataBytes := []byte(pull.Data)
-		err = json.Unmarshal(dataBytes, &ePull)
-		if err != nil {
-			panic(err)
-		}
+		wg.Add(1)
 
-		// Adding comment internal ID's to the payload to support Ember Data sideloading
-		commentIDs := make([]int, len(pull.Comments))
-		for idx, comment := range pull.Comments {
-			commentIDs[idx] = comment.ID
-		}
-		pullMap := structs.Map(ePull)
-		pullMap["comments"] = commentIDs
-		pullMaps[idx] = pullMap
+		go func(idx int, pull Pull) {
+			defer wg.Done()
 
-		eComments := buildExportedComments(pull.Comments)
+			var ePull exports.Pull
+			dataBytes := []byte(pull.Data)
+			err = json.Unmarshal(dataBytes, &ePull)
+			if err != nil {
+				panic(err)
+			}
 
-		allComments = append(allComments, eComments...)
+			// Adding comment internal ID's to the payload to support Ember Data sideloading
+			commentIDs := make([]int, len(pull.Comments))
+			for idx, comment := range pull.Comments {
+				commentIDs[idx] = comment.ID
+			}
+			pullMap := structs.Map(ePull)
+			pullMap["comments"] = commentIDs
+			pullMaps[idx] = pullMap
+
+			pullComments := buildExportedComments(pull.Comments)
+
+			eComments = append(eComments, pullComments...)
+		}(idx, pull)
 	}
 
-	response := buildPullJSON(pullMaps, allComments)
+	wg.Wait()
+
+	response := buildPullJSON(pullMaps, eComments)
 
 	addResponseHeaders(w)
 	w.Write(response)

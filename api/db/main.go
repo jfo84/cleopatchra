@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"sync"
 
 	"github.com/fatih/structs"
 	"github.com/go-pg/pg"
@@ -161,44 +160,54 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build pull exports concurrently
-	wg := &sync.WaitGroup{}
-	pullMaps := make([]map[string]interface{}, len(pulls))
-	var eComments []exports.Comment
+	pChan := make(chan []map[string]interface{}, len(pulls))
+	cChan := make(chan []exports.Comment)
 
 	for idx, pull := range pulls {
-		wg.Add(1)
-
-		go func(idx int, pull Pull) {
-			defer wg.Done()
-
-			var ePull exports.Pull
-			dataBytes := []byte(pull.Data)
-			err = json.Unmarshal(dataBytes, &ePull)
-			if err != nil {
-				panic(err)
-			}
-
-			// Adding comment internal ID's to the payload to support Ember Data sideloading
-			commentIDs := make([]int, len(pull.Comments))
-			for idx, comment := range pull.Comments {
-				commentIDs[idx] = comment.ID
-			}
-			pullMap := structs.Map(ePull)
-			pullMap["comments"] = commentIDs
-			pullMaps[idx] = pullMap
-
-			pullComments := buildExportedComments(pull.Comments)
-
-			eComments = append(eComments, pullComments...)
-		}(idx, pull)
+		go buildPullExports(pChan, cChan, idx, pull, len(pulls))
 	}
 
-	wg.Wait()
+	pullMaps := <-pChan
+	eComments := <-cChan
 
 	response := buildPullJSON(pullMaps, eComments)
 
 	addResponseHeaders(w)
 	w.Write(response)
+}
+
+func buildPullExports(
+	pChan chan []map[string]interface{},
+	cChan chan []exports.Comment,
+	idx int,
+	pull Pull,
+	pLen int,
+) {
+	pullMaps := make([]map[string]interface{}, pLen)
+	var eComments []exports.Comment
+
+	var ePull exports.Pull
+	dataBytes := []byte(pull.Data)
+	err := json.Unmarshal(dataBytes, &ePull)
+	if err != nil {
+		panic(err)
+	}
+
+	// Adding comment internal ID's to the payload to support Ember Data sideloading
+	commentIDs := make([]int, len(pull.Comments))
+	for cIdx, comment := range pull.Comments {
+		commentIDs[cIdx] = comment.ID
+	}
+	pullMap := structs.Map(ePull)
+	pullMap["comments"] = commentIDs
+	pullMaps[idx] = pullMap
+
+	pullComments := buildExportedComments(pull.Comments)
+
+	eComments = append(eComments, pullComments...)
+
+	pChan <- pullMaps
+	cChan <- eComments
 }
 
 func buildExportedComments(comments []*Comment) []exports.Comment {

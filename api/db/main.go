@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/fatih/structs"
@@ -130,6 +131,13 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		commentIDs[idx] = comment.ID
 	}
 	pullMap := structs.Map(ePull)
+	// Lowercase keys since we no longer get annotations with the map[string]interface{}
+	for key, value := range pullMap {
+		loweredKey := strings.ToLower(key)
+		delete(pullMap, key)
+		pullMap[loweredKey] = value
+	}
+
 	pullMap["comments"] = commentIDs
 
 	pullMaps := make([]map[string]interface{}, 1)
@@ -184,6 +192,13 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 				commentIDs[idx] = comment.ID
 			}
 			pullMap := structs.Map(ePull)
+			// Lowercase keys since we no longer get annotations with the map[string]interface{}
+			for key, value := range pullMap {
+				loweredKey := strings.ToLower(key)
+				delete(pullMap, key)
+				pullMap[loweredKey] = value
+			}
+
 			pullMap["comments"] = commentIDs
 			pullMaps[idx] = pullMap
 

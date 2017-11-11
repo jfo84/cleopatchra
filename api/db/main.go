@@ -1,19 +1,19 @@
 package db
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 
-	"github.com/fatih/structs"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
+	"github.com/google/jsonapi"
 	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/exports"
+	"github.com/jfo84/cleopatchra/api/unmarshalling"
+	"github.com/jinzhu/copier"
 )
 
 // Wrapper is a wrapper over pg.DB
@@ -65,13 +65,11 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	repos := make([]exports.Repo, 1)
-	repos[0] = eRepo
-
-	response := buildRepoJSON(repos)
-
 	addResponseHeaders(w)
-	w.Write(response)
+
+	if err := jsonapi.MarshalPayload(w, &eRepo); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
@@ -84,21 +82,33 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	eRepos := make([]exports.Repo, len(repos))
-	for idx, repo := range repos {
-		var eRepo exports.Repo
-		dataBytes := []byte(repo.Data)
-		err = json.Unmarshal(dataBytes, &eRepo)
-		if err != nil {
-			panic(err)
-		}
-		eRepos[idx] = eRepo
-	}
+	// Build repo exports concurrently
+	wg := &sync.WaitGroup{}
+	eRepos := make([]*exports.Repo, len(repos))
 
-	response := buildRepoJSON(eRepos)
+	for idx, repo := range repos {
+		wg.Add(1)
+
+		go func(idx int, repo Repo) {
+			defer wg.Done()
+
+			var eRepo exports.Repo
+			repoBytes := []byte(repo.Data)
+			err = json.Unmarshal(repoBytes, &eRepo)
+			if err != nil {
+				panic(err)
+			}
+
+			eRepos[idx] = &eRepo
+		}(idx, repo)
+	}
+	wg.Wait()
 
 	addResponseHeaders(w)
-	w.Write(response)
+
+	if err := jsonapi.MarshalPayload(w, eRepos); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // GetPull is a function handler that retrieves a particular PR from the DB and writes it with the responseWriter
@@ -118,37 +128,24 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	var ePull exports.Pull
+	var uPull unmarshalling.Pull
 	pullBytes := []byte(pull.Data)
-	err = json.Unmarshal(pullBytes, &ePull)
+	err = json.Unmarshal(pullBytes, &uPull)
 	if err != nil {
 		panic(err)
 	}
 
-	// Adding comment internal ID's to the payload to support Ember Data sideloading
-	commentIDs := make([]int, len(pull.Comments))
-	for idx, comment := range pull.Comments {
-		commentIDs[idx] = comment.ID
-	}
-	pullMap := structs.Map(ePull)
-	// Lowercase keys since we no longer get annotations with the map[string]interface{}
-	for key, value := range pullMap {
-		loweredKey := strings.ToLower(key)
-		delete(pullMap, key)
-		pullMap[loweredKey] = value
-	}
-
-	pullMap["comments"] = commentIDs
-
-	pullMaps := make([]map[string]interface{}, 1)
-	pullMaps[0] = pullMap
+	var ePull exports.Pull
+	copier.Copy(&ePull, &uPull)
 
 	eComments := buildExportedComments(pull.Comments)
-
-	response := buildPullJSON(pullMaps, eComments)
+	ePull.Comments = eComments
 
 	addResponseHeaders(w)
-	w.Write(response)
+
+	if err := jsonapi.MarshalPayload(w, &ePull); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // GetPulls is a function handler that retrieves a set of PR's from the DB and writes them with the responseWriter
@@ -170,8 +167,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 	// Build pull exports concurrently
 	wg := &sync.WaitGroup{}
-	pullMaps := make([]map[string]interface{}, len(pulls))
-	var eComments []exports.Comment
+	ePulls := make([]*exports.Pull, len(pulls))
 
 	for idx, pull := range pulls {
 		wg.Add(1)
@@ -179,45 +175,32 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 		go func(idx int, pull Pull) {
 			defer wg.Done()
 
-			var ePull exports.Pull
-			dataBytes := []byte(pull.Data)
-			err = json.Unmarshal(dataBytes, &ePull)
+			var uPull unmarshalling.Pull
+			pullBytes := []byte(pull.Data)
+			err = json.Unmarshal(pullBytes, &uPull)
 			if err != nil {
 				panic(err)
 			}
 
-			// Adding comment internal ID's to the payload to support Ember Data sideloading
-			commentIDs := make([]int, len(pull.Comments))
-			for idx, comment := range pull.Comments {
-				commentIDs[idx] = comment.ID
-			}
-			pullMap := structs.Map(ePull)
-			// Lowercase keys since we no longer get annotations with the map[string]interface{}
-			for key, value := range pullMap {
-				loweredKey := strings.ToLower(key)
-				delete(pullMap, key)
-				pullMap[loweredKey] = value
-			}
+			var ePull exports.Pull
+			copier.Copy(&ePull, &uPull)
 
-			pullMap["comments"] = commentIDs
-			pullMaps[idx] = pullMap
-
-			pullComments := buildExportedComments(pull.Comments)
-
-			eComments = append(eComments, pullComments...)
+			eComments := buildExportedComments(pull.Comments)
+			ePull.Comments = eComments
+			ePulls[idx] = &ePull
 		}(idx, pull)
 	}
-
 	wg.Wait()
 
-	response := buildPullJSON(pullMaps, eComments)
-
 	addResponseHeaders(w)
-	w.Write(response)
+
+	if err := jsonapi.MarshalPayload(w, ePulls); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func buildExportedComments(comments []*Comment) []exports.Comment {
-	eComments := make([]exports.Comment, len(comments))
+func buildExportedComments(comments []*Comment) []*exports.Comment {
+	eComments := make([]*exports.Comment, len(comments))
 	for idx, comment := range comments {
 		var eComment exports.Comment
 		commentBytes := []byte(comment.Data)
@@ -225,83 +208,9 @@ func buildExportedComments(comments []*Comment) []exports.Comment {
 		if err != nil {
 			panic(err)
 		}
-		eComments[idx] = eComment
+		eComments[idx] = &eComment
 	}
 	return eComments
-}
-
-func buildRepoJSON(models []exports.Repo) []byte {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`[`)
-	for idx, model := range models {
-		if &model != nil {
-			if idx != 0 {
-				buffer.WriteString(",")
-			}
-			mJSON, err := json.Marshal(model)
-			if err != nil {
-				continue
-			}
-			buffer.Write(mJSON)
-		}
-	}
-	buffer.WriteString(`]`)
-
-	return wrapModelJSON("repos", buffer.Bytes())
-}
-
-func buildPullJSON(pulls []map[string]interface{}, comments []exports.Comment) []byte {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`{"pulls":[`)
-	for idx, pull := range pulls {
-		if pull != nil {
-			if idx != 0 {
-				buffer.WriteString(",")
-			}
-
-			pJSON, err := json.Marshal(pull)
-			if err != nil {
-				continue
-			}
-
-			buffer.Write(pJSON)
-		}
-	}
-	buffer.WriteString(`]`)
-	buffer.WriteString(`,`)
-	buffer.WriteString(`"comments":[`)
-	for idx, comment := range comments {
-		if &comment != nil {
-			if idx != 0 {
-				buffer.WriteString(",")
-			}
-
-			cJSON, err := json.Marshal(comment)
-			if err != nil {
-				continue
-			}
-
-			buffer.Write(cJSON)
-		}
-	}
-	buffer.WriteString(`]`)
-	buffer.WriteString(`}`)
-
-	return buffer.Bytes()
-}
-
-func wrapModelJSON(modelKey string, jsonBytes []byte) []byte {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`{"`)
-	buffer.WriteString(modelKey)
-	buffer.WriteString(`":`)
-	buffer.Write(jsonBytes)
-	buffer.WriteString(`}`)
-
-	return buffer.Bytes()
 }
 
 func addResponseHeaders(w http.ResponseWriter) {

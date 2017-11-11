@@ -6,3 +6,6 @@ import:
   version: ~6.6.6
 - package: github.com/fatih/structs
   version: ~1.0.0
+- package: github.com/google/jsonapi
+  version: ~1.0.0
+- package: github.com/jinzhu/copier

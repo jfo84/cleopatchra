@@ -1,20 +1,24 @@
-hash: 0b6c8bf07642eaf126a03de9794ddfbe1daa0536f2d9e84d30171006a0635746
-updated: 2017-11-07T12:44:34.401973377Z
+hash: a79a5f8d9ba16da62dccc44fb3642e458ac65f53694750c6ebe85b09d3a80bc9
+updated: 2017-11-11T14:52:28.845212438Z
 imports:
 - name: github.com/fatih/structs
   version: a720dfa8df582c51dee1b36feabb906bde1588bd
 - name: github.com/go-pg/pg
-  version: c2c9b3c1cb6dcc2eac1269d1557aeee791312a1c
+  version: f7825ca79b63ead4417c219bba98a85b198bf605
   subpackages:
   - internal
   - internal/parser
   - internal/pool
   - orm
   - types
+- name: github.com/google/jsonapi
+  version: 46d3ced0434461be12e555852e2f1a9ed382e139
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 7f08801859139f86dfafd1c296e2cba9a80d292e
+- name: github.com/jinzhu/copier
+  version: db4671f3a9b8df855e993f7c94ec5ef1ffb0a23b
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
 testImports:

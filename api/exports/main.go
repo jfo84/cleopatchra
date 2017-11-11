@@ -2,42 +2,43 @@ package exports
 
 // Comment represents the exported version of a GitHub comment
 type Comment struct {
-	ID               int    `json:"id"`
-	Body             string `json:"body"`
-	Position         int    `json:"position"`
-	OriginalPosition int    `json:"original_position"`
-	User             *User  `json:"user"`
+	ID               int    `jsonapi:"primary,comments"`
+	Body             string `jsonapi:"attr,body"`
+	Position         int    `jsonapi:"attr,position"`
+	OriginalPosition int    `jsonapi:"attr,original_position"`
+	User             *User  `jsonapi:"relation,user"`
 }
 
 // Pull represents the exported version of a Github pull request
 type Pull struct {
-	ID     int    `json:"id"`
-	Number int    `json:"number"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	Merged bool   `json:"merged"`
-	User   *User  `json:"user"`
-	Repo   *Repo  `json:"repo"`
+	ID       int        `jsonapi:"primary,pulls"`
+	Number   int        `jsonapi:"attr,number"`
+	Title    string     `jsonapi:"attr,title"`
+	Body     string     `jsonapi:"attr,body"`
+	Merged   bool       `jsonapi:"attr,merged"`
+	User     *User      `jsonapi:"relation,user"`
+	Repo     *Repo      `jsonapi:"relation,repo"`
+	Comments []*Comment `jsonapi:"relation,comments"`
 }
 
 // User represents the exported version of a user in GitHub
 type User struct {
-	ID    int    `json:"id"`
-	Login string `json:"login"`
+	ID    int    `jsonapi:"primary,users"`
+	Login string `jsonapi:"attr,login"`
 }
 
 // Repo represents the exported version of a GitHub repository
 type Repo struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	Description   string `json:"description"`
-	WatchersCount int    `json:"watchers_count"`
-	Language      string `json:"language"`
-	Owner         *Owner `json:"owner"`
+	ID            int    `jsonapi:"primary,repos"`
+	Name          string `jsonapi:"attr,name"`
+	FullName      string `jsonapi:"attr,full_name"`
+	Description   string `jsonapi:"attr,description"`
+	WatchersCount int    `jsonapi:"attr,watchers_count"`
+	Language      string `jsonapi:"attr,language"`
+	Owner         *Owner `jsonapi:"relation,owner"`
 }
 
 // Owner represents the exported version of a GitHub repository
 type Owner struct {
-	ID int `json:"id"`
+	ID int `jsonapi:"attr,"id"`
 }

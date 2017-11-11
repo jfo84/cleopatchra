@@ -1,0 +1,15 @@
+<div local-class='pull-wrapper'>
+  <div local-class='title-wrapper'>
+    <h4 local-class='title'>{{pull.title}}</h4>
+    <h4 local-class='number'>#{{pull.number}}</h4>
+  </div>
+  <div local-class='body'>{{markdown-render pull.body}}</div>
+</div>
+{{#each comments as |comment|}}
+  <div local-class='comment-wrapper'>
+    <div local-class='title-wrapper'>
+      <h4 local-class='title'>{{comment.user.login}}</h4>
+    </div>
+    <div local-class='body'>{{markdown-render comment.body}}</div>
+  </div>
+{{/each}}

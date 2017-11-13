@@ -84,11 +84,11 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 
 	// Build repo exports concurrently
 	wg := &sync.WaitGroup{}
-	eRepos := make([]*exports.Repo, len(repos))
+	rLen := len(repos)
+	eRepos := make([]*exports.Repo, rLen)
+	wg.Add(rLen)
 
 	for idx, repo := range repos {
-		wg.Add(1)
-
 		go func(idx int, repo Repo) {
 			defer wg.Done()
 
@@ -167,11 +167,11 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 
 	// Build pull exports concurrently
 	wg := &sync.WaitGroup{}
-	ePulls := make([]*exports.Pull, len(pulls))
+	pLen := len(pulls)
+	ePulls := make([]*exports.Pull, pLen)
+	wg.Add(pLen)
 
 	for idx, pull := range pulls {
-		wg.Add(1)
-
 		go func(idx int, pull Pull) {
 			defer wg.Done()
 

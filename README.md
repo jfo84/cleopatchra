@@ -9,7 +9,7 @@ Golang
 - Install dependent packages with `glide install`. If you don't have glide installed, you can install it [here](https://glide.sh/)
 - Compile the program by running `go build`
 - Run the server with `./cleopatchra`
-- You'll need to setup a database and seed it with state with a small Ruby app before the app will fully function (see below)
+- You'll need to setup a database and seed it with a small Ruby app before the app will fully function (see below)
 
 Ruby
 - `cd` into the `seed_db` directory from root

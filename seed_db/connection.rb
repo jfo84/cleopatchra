@@ -44,7 +44,7 @@ class Connection
     connection.exec('CREATE TABLE pulls (
       id integer PRIMARY KEY,
       data jsonb NOT NULL,
-      repo_id text NOT NULL)')
+      repo_id integer NOT NULL)')
     connection.exec("CREATE TABLE comments (
       id integer PRIMARY KEY,
       data jsonb NOT NULL,
@@ -59,5 +59,9 @@ class Connection
     ['repos', 'pulls', 'comments', 'reviews'].each do |table_name|
       connection.exec("CREATE UNIQUE INDEX index_#{table_name}_on_id ON #{table_name} (id)")
     end
+    # Add indices for foreign keys
+    connection.exec("CREATE UNIQUE INDEX index_pulls_on_repo_id ON pulls (repo_id)")
+    connection.exec("CREATE UNIQUE INDEX index_comments_on_pull_id ON comments (pull_id)")
+    connection.exec("CREATE UNIQUE INDEX index_reviews_on_pull_id ON reviews (pull_id)")
   end
 end

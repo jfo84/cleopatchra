@@ -45,7 +45,7 @@ var CommentFactory = factory.NewFactory(
 	return tx.Insert(args.Instance())
 })
 
-func TestDB(t *testing.T) {
+func TestCleopatchra(t *testing.T) {
 	dbWrap := db.OpenTestDB()
 
 	for i := 0; i < 3; i++ {

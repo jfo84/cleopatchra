@@ -219,8 +219,8 @@ func addResponseHeaders(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// OpenDb initializes and returns a pointer to a Wrapper struct
-func OpenDb() *Wrapper {
+// OpenDB initializes and returns a pointer to a Wrapper struct
+func OpenDB() *Wrapper {
 	user := os.Getenv("DEFAULT_POSTGRES_USER")
 	db := pg.Connect(&pg.Options{
 		User:     user,
@@ -228,4 +228,43 @@ func OpenDb() *Wrapper {
 	})
 
 	return &Wrapper{db: db}
+}
+
+func openTestDB() *Wrapper {
+	db := pg.Connect(&pg.Options{
+		User:     "postgres",
+		Database: "cleopatchra_test",
+	})
+	wrapper := &Wrapper{db: db}
+
+	err := createTestSchema(wrapper)
+	if err != nil {
+		panic(err)
+	}
+
+	return wrapper
+}
+
+func createTestSchema(wrapper *Wrapper) error {
+	tables := []interface{}{
+		&Repo{},
+		&Pull{},
+	}
+	for _, table := range tables {
+		err := wrapper.db.DropTable(table, &orm.DropTableOptions{
+			IfExists: true,
+			Cascade:  true,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = wrapper.db.CreateTable(table, &orm.CreateTableOptions{
+			Temp: true,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

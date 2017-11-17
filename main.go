@@ -17,7 +17,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	db := db.OpenDb()
+	db := db.OpenDB()
 	r := mux.NewRouter().StrictSlash(true)
 	s := r.PathPrefix("/repos").Subrouter()
 

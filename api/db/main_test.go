@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bluele/factory-go/factory"
 	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/jfo84/factory-go/factory"
 )
 
+// To avoid collisions with other keys
+type key string
+
+// PullFactory is a factory for generating temporary rows on the pulls table
 var PullFactory = factory.NewFactory(
 	&Pull{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
@@ -18,10 +21,12 @@ var PullFactory = factory.NewFactory(
 	pull := args.Instance().(*Pull)
 	return fmt.Sprintf("pull-%d", pull.ID), nil
 }).OnCreate(func(args factory.Args) error {
-	tx := args.Context().Value("tx").(*pg.Tx)
+	const txKey key = "tx"
+	tx := args.Context().Value(txKey).(*pg.Tx)
 	return tx.Insert(args.Instance())
 }).SubFactory("Repo", RepoFactory)
 
+// RepoFactory is a factory for generating temporary rows on the repos table
 var RepoFactory = factory.NewFactory(
 	&Repo{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
@@ -30,58 +35,20 @@ var RepoFactory = factory.NewFactory(
 	repo := args.Instance().(*Repo)
 	return fmt.Sprintf("repo-%d", repo.ID), nil
 }).OnCreate(func(args factory.Args) error {
-	tx := args.Context().Value("tx").(*pg.Tx)
+	const txKey key = "tx"
+	tx := args.Context().Value(txKey).(*pg.Tx)
 	return tx.Insert(args.Instance())
 })
 
-func createTestSchema(db *pg.DB) error {
-	tables := []interface{}{
-		&Repo{},
-		&Pull{},
-	}
-	for _, table := range tables {
-		err := db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateTable(table, &orm.CreateTableOptions{
-			Temp: true,
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func openDB() *pg.DB {
-	db := pg.Connect(&pg.Options{
-		User:     "postgres",
-		Database: "cleopatchra_test",
-	})
-
-	err := createTestSchema(db)
-	if err != nil {
-		panic(err)
-	}
-
-	return db
-}
-
 func TestDB(t *testing.T) {
-	db := openDB()
+	dbWrap := openTestDB()
+
 	for i := 0; i < 3; i++ {
-		tx, err := db.Begin()
+		tx, err := dbWrap.db.Begin()
 		if err != nil {
 			panic(err)
 		}
 
-		// To avoid collisions with other keys
-		type key string
 		const txKey key = "tx"
 
 		ctx := context.WithValue(context.Background(), txKey, tx)

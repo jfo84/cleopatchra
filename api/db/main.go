@@ -45,7 +45,7 @@ type Repo struct {
 }
 
 // GetRepo is a function handler that retrieves a particular repository from the DB and writes it with the responseWriter
-func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
+func (wrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ID, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
@@ -53,7 +53,7 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	repo := Repo{ID: ID}
-	err = dbWrap.db.Select(&repo)
+	err = wrap.db.Select(&repo)
 	if err != nil {
 		panic(err)
 	}
@@ -73,9 +73,9 @@ func (dbWrap *Wrapper) GetRepo(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetRepos is a function handler that retrieves a set of repos from the DB and writes them with the responseWriter
-func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
+func (wrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 	var repos []Repo
-	err := dbWrap.db.Model(&repos).
+	err := wrap.db.Model(&repos).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
 	if err != nil {
@@ -112,7 +112,7 @@ func (dbWrap *Wrapper) GetRepos(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPull is a function handler that retrieves a particular PR from the DB and writes it with the responseWriter
-func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
+func (wrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ID, err := strconv.Atoi(vars["pullID"])
 	if err != nil {
@@ -120,7 +120,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pull Pull
-	err = dbWrap.db.Model(&pull).
+	err = wrap.db.Model(&pull).
 		Column("pull.*", "Comments").
 		Where("pull.id = ?", ID).
 		Select()
@@ -149,7 +149,7 @@ func (dbWrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPulls is a function handler that retrieves a set of PR's from the DB and writes them with the responseWriter
-func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
+func (wrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	repoID, err := strconv.Atoi(vars["repoID"])
 	if err != nil {
@@ -157,7 +157,7 @@ func (dbWrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pulls []Pull
-	err = dbWrap.db.Model(&pulls).
+	err = wrap.db.Model(&pulls).
 		Where("pull.repo_id = ?", repoID).
 		Apply(orm.Pagination(r.URL.Query())).
 		Select()
@@ -219,6 +219,15 @@ func addResponseHeaders(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// BeginTx begins a transaction on the wrapped pg.DB instance
+func (wrap *Wrapper) BeginTx() *pg.Tx {
+	tx, err := wrap.db.Begin()
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+
 // OpenDB initializes and returns a pointer to a Wrapper struct
 func OpenDB() *Wrapper {
 	user := os.Getenv("DEFAULT_POSTGRES_USER")
@@ -230,7 +239,8 @@ func OpenDB() *Wrapper {
 	return &Wrapper{db: db}
 }
 
-func openTestDB() *Wrapper {
+// OpenTestDB initializes and returns a pointer to a Wrapper struct and initializes temporary testing tables
+func OpenTestDB() *Wrapper {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Database: "cleopatchra_test",

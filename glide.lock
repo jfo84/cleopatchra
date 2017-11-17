@@ -1,5 +1,5 @@
-hash: a79a5f8d9ba16da62dccc44fb3642e458ac65f53694750c6ebe85b09d3a80bc9
-updated: 2017-11-11T14:52:28.845212438Z
+hash: 6ff7223af3f4bd3e21d23d3ed35568b65d99ef80cc85e5fb99a2ac8a73e111dd
+updated: 2017-11-17T19:14:06.720062218+01:00
 imports:
 - name: github.com/fatih/structs
   version: a720dfa8df582c51dee1b36feabb906bde1588bd
@@ -21,8 +21,12 @@ imports:
   version: db4671f3a9b8df855e993f7c94ec5ef1ffb0a23b
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
 testImports:
-- name: github.com/bluele/factory-go
+- name: github.com/jfo84/factory-go
   version: 1d928936c2ee62f4a0385db9842bc037bac527c1
   subpackages:
   - factory

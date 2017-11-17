@@ -22,4 +22,4 @@ JavaScript
 - Install the Ember command-line tools with `yarn global add ember-cli`
 - `cd` into the `front_end` directory from root
 - Install our JavaScript dependencies with `yarn`
-- Serve the front-end with `ember serve`
+- Serve the app with `ember serve`

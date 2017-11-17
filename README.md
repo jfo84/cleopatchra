@@ -15,7 +15,7 @@ Ruby
 - `cd` into the `seed_db` directory from root
 - Install Ruby version 2.4.1 with a tool such as [RVM](https://rvm.io/)
 - Install dependencies with `bundle install`
-- Seed the database for a given repository with `ruby run.rb seed --organization foo_org --repo bar_repo`
+- Seed the database for a given repository with `ruby run.rb seed --organization 'foo_org' --repo 'bar_repo'`
 
 JavaScript
 - The front end uses the Ember.js framework. You will need a current version (engine 8+) of [Node](https://nodejs.org/) and [yarn](https://yarnpkg.com/) installed

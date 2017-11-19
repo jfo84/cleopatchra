@@ -259,6 +259,7 @@ func createTestSchema(wrapper *Wrapper) error {
 	tables := []interface{}{
 		&Repo{},
 		&Pull{},
+		&Comment{},
 	}
 	for _, table := range tables {
 		err := wrapper.db.DropTable(table, &orm.DropTableOptions{

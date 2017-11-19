@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-pg/pg"
+	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/db"
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/factory-go/factory"
@@ -24,7 +26,12 @@ var PullFactory = factory.NewFactory(
 	return n, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	pull := args.Instance().(*db.Pull)
-	return fmt.Sprintf("pull-%d", pull.ID), nil
+	fileName := fmt.Sprintf("./testing/fixtures/%d.json", pull.ID)
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		panic(err)
+	}
+	return string(data[:]), nil
 }).OnCreate(func(args factory.Args) error {
 	const txKey key = "tx"
 	tx := args.Context().Value(txKey).(*pg.Tx)
@@ -33,7 +40,7 @@ var PullFactory = factory.NewFactory(
 
 // CommentFactory is a factory for generating temporary rows on the comments table
 var CommentFactory = factory.NewFactory(
-	&db.Pull{},
+	&db.Comment{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
@@ -63,30 +70,31 @@ func TestCleopatchra(t *testing.T) {
 		tx.Commit()
 	}
 
+	router := mux.NewRouter().StrictSlash(true)
+
 	req, err := http.NewRequest("GET", "/pulls/1", nil)
 
-	checkError(err, t)
+	if err != nil {
+		t.Errorf("An error occurred. %v", err)
+	}
 
-	rr := httptest.NewRecorder()
+	recorder := httptest.NewRecorder()
 
 	pullController := pull.NewController(dbWrap)
-	http.HandlerFunc(pullController.Get).ServeHTTP(rr, req)
+	router.HandleFunc("/pulls/{pullID}", pullController.Get)
+	router.ServeHTTP(recorder, req)
 
 	// Confirm the response has the right status code
-	if status := rr.Code; status != http.StatusOK {
+	if status := recorder.Code; status != http.StatusOK {
 		t.Errorf("Status code differs. Expected %d .\n Got %d instead", http.StatusOK, status)
 	}
 
 	// Confirm the returned json is what we expected
-	// Manually build up the expected json string
-	expected := string(`[{"id":1,"title":"New blog resolution","content":"I have decided to give my blog a new life and would hence forth try to write as often"},{"id":2,"title":"Go is cool","content":"Yeah i have been told that multiple times"},{"id":3,"title":"Interminttent fasting","content":"You should try this out, it helps clear the brain and tons of health benefits"},{"id":4,"title":"Yet another blog post","content":"I made a resolution earlier to keep on writing. Here is an affirmation of that"},{"id":5,"title":"Backpacking","content":"Yup, i did just that"}]`)
-
-	// The assert package checks if both JSON string are equal and for a plus, it actually confirms if our manually built JSON string is valid
-	assert.JSONEq(t, expected, rr.Body.String(), "Response body differs")
-}
-
-func checkError(err error, t *testing.T) {
+	eBytes, err := ioutil.ReadFile("./testing/fixtures/expected1.json")
 	if err != nil {
-		t.Errorf("An error occurred. %v", err)
+		panic(err)
 	}
+	expected := string(eBytes[:])
+
+	assert.JSONEq(t, expected, recorder.Body.String(), "Response body differs")
 }

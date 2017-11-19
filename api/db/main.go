@@ -231,8 +231,14 @@ func (wrap *Wrapper) BeginTx() *pg.Tx {
 // OpenDB initializes and returns a pointer to a Wrapper struct
 func OpenDB() *Wrapper {
 	user := os.Getenv("DEFAULT_POSTGRES_USER")
+	if user == "" {
+		user = "postgres"
+	}
+	// Assume no password means a password of empty string is fine
+	password := os.Getenv("DEFAULT_POSTGRES_PASSWORD")
 	db := pg.Connect(&pg.Options{
 		User:     user,
+		Password: password,
 		Database: "cleopatchra",
 	})
 

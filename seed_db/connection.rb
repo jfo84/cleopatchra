@@ -23,11 +23,11 @@ class Connection
   def initialize_db
     unless exists?
       template_connection.exec("CREATE DATABASE #{db_name}")
-      connection = PG::Connection.new(dbname: db_name)
+      connection = PG::Connection.new(dbname: db_name, user: user, password: password)
       initialize_tables(connection)
       index_tables(connection)
     end
-    @connection = connection || PG::Connection.new(dbname: db_name)
+    @connection = connection || PG::Connection.new(dbname: db_name, user: user, password: password)
   end
 
   def exists?
@@ -63,5 +63,20 @@ class Connection
     connection.exec("CREATE UNIQUE INDEX index_pulls_on_repo_id ON pulls (repo_id)")
     connection.exec("CREATE UNIQUE INDEX index_comments_on_pull_id ON comments (pull_id)")
     connection.exec("CREATE UNIQUE INDEX index_reviews_on_pull_id ON reviews (pull_id)")
+  end
+
+  private
+
+  def user
+    user = ENV['DEFAULT_POSTGRES_USER']
+    if user === '' {
+      user = 'postgres'
+    }
+    user
+  end
+
+  def password
+    # Assume empty string is fine if the var isn't set
+    ENV['DEFAULT_POSTGRES_PASSWORD']
   end
 end

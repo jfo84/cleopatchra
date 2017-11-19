@@ -16,6 +16,7 @@ Golang
 Ruby
 - `cd` into the `seed_db` directory from root
 - Install [PostgreSQL](https://www.postgresql.org/docs/10/static/tutorial-install.html)
+- Set environment variables for `DEFAULT_POSTGRES_USER` and `DEFAULT_POSTGRES_PASSWORD` to configure PostgreSQL access
 - Install Ruby version 2.4.1 with a tool such as [RVM](https://rvm.io/)
 - Install dependencies with `bundle install`
 - Seed the database for a given repository with `ruby run.rb seed --organization 'foo_org' --repo 'bar_repo'`

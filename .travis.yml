@@ -1,0 +1,11 @@
+language: go
+go:
+ - 1.9.1
+services:
+  - postgresql
+install:
+  - go get -v github.com/Masterminds/glide
+  - cd $GOPATH/src/github.com/Masterminds/glide && git checkout 67790b3dbede72cfdc54aa53be4706322c9499e0 && go install && cd -
+  - glide install
+before_script:
+  - psql -c 'create database cleopatchra_test;' -U postgres

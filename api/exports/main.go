@@ -40,5 +40,5 @@ type Repo struct {
 
 // Owner represents the exported version of a GitHub repository
 type Owner struct {
-	ID int `jsonapi:"attr,"id"`
+	ID int `jsonapi:"attr,id"`
 }

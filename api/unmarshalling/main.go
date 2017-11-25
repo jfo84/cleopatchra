@@ -14,11 +14,12 @@ contains a "comments" key with an int value (# of comments)
 
 // Pull represents the unmarshalling interface for a GitHub pull request
 type Pull struct {
-	ID     int           `json:"id"`
-	Number int           `json:"number"`
-	Title  string        `json:"title"`
-	Body   string        `json:"body"`
-	Merged bool          `json:"merged"`
-	User   *exports.User `json:"user"`
-	Repo   *exports.Repo `json:"repo"`
+	ID          int           `json:"id"`
+	Number      int           `json:"number"`
+	Title       string        `json:"title"`
+	Body        string        `json:"body"`
+	Merged      bool          `json:"merged"`
+	NumComments int           `json:"comments"`
+	User        *exports.User `json:"user"`
+	Repo        *exports.Repo `json:"repo"`
 }

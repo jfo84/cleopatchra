@@ -5,6 +5,7 @@
      "attributes":{
         "body":"This info is now on the website and not in CONTRIBUTING.md",
         "merged":false,
+        "num_comments":0,
         "number":11489,
         "title":"docs(readme): correct link for \"your first PR\""
      },

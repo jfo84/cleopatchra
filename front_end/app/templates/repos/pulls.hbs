@@ -1,3 +1,14 @@
-{{#each pulls as |pull|}}
-  {{pull-request pull=pull comments=pull.comments}}
-{{/each}}
+{{#ember-table
+  rows=rows
+  columns=columns
+  as |row|
+}}
+  {{#each pulls as |pull|}}
+    {{#ember-table-row
+      row=row
+      as |cell|
+    }}
+      {{pull-request pull=pull}}
+    {{/ember-table-row}}
+  {{/each}}
+{{/ember-table}}

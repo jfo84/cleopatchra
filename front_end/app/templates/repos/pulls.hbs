@@ -3,12 +3,10 @@
   columns=columns
   as |row|
 }}
-  {{#each pulls as |pull|}}
-    {{#ember-table-row
-      row=row
-      as |cell|
-    }}
-      {{pull-request pull=pull}}
-    {{/ember-table-row}}
-  {{/each}}
+  {{#ember-table-row
+    pull=row
+    as |pull|
+  }}
+    {{pull-request pull=pull}}
+  {{/ember-table-row}}
 {{/ember-table}}

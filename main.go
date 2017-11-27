@@ -25,7 +25,7 @@ func main() {
 	s.HandleFunc("/", reposController.Get)
 
 	repoController := repo.NewController(db)
-	s.HandleFunc("/{repoID}/", repoController.Get)
+	s.HandleFunc("/{repoID}", repoController.Get)
 
 	pullsController := pulls.NewController(db)
 	s.HandleFunc("/{repoID}/pulls", pullsController.Get)

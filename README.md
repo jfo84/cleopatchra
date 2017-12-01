@@ -14,7 +14,7 @@ Golang
 - You'll need to setup a database and seed it with a small Ruby app before the app will fully function (see below)
 
 Ruby
-- `cd` into the `seed_db` directory from root
+- `cd` into the `seed-db` directory from root
 - Install [PostgreSQL](https://www.postgresql.org/docs/10/static/tutorial-install.html)
 - Set environment variables for `DEFAULT_POSTGRES_USER` and `DEFAULT_POSTGRES_PASSWORD` to configure PostgreSQL access
 - Install Ruby version 2.4.1 with a tool such as [RVM](https://rvm.io/)

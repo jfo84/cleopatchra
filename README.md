@@ -23,6 +23,6 @@ Ruby
 
 JavaScript
 - The front end uses the React framework. You will need a current version (engine 8+) of [Node](https://nodejs.org/) and [yarn](https://yarnpkg.com/) installed
-- `cd` into the `front_end` directory from root
+- `cd` into the `front-end` directory from root
 - Install our JavaScript dependencies with `yarn`
 - Serve the app with `yarn start`

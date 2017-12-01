@@ -29,9 +29,8 @@ var PullFactory = factory.NewFactory(
 	pull := args.Instance().(*db.Pull)
 	if pull.ID != 3 {
 		return 1, nil
-	} else {
-		return 2, nil
 	}
+	return 2, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	pull := args.Instance().(*db.Pull)
 	fileName := fmt.Sprintf("./testing/fixtures/%d.json", pull.ID)

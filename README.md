@@ -22,8 +22,7 @@ Ruby
 - Seed the database for a given repository with `ruby run.rb seed --organization 'foo_org' --repo 'bar_repo'`
 
 JavaScript
-- The front end uses the Ember.js framework. You will need a current version (engine 8+) of [Node](https://nodejs.org/) and [yarn](https://yarnpkg.com/) installed
-- Install the Ember command-line tools with `yarn global add ember-cli`
+- The front end uses the React framework. You will need a current version (engine 8+) of [Node](https://nodejs.org/) and [yarn](https://yarnpkg.com/) installed
 - `cd` into the `front_end` directory from root
 - Install our JavaScript dependencies with `yarn`
-- Serve the app with `ember serve`
+- Serve the app with `yarn start`

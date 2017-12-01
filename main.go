@@ -19,16 +19,15 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	db := db.OpenDB()
 	r := mux.NewRouter().StrictSlash(true)
-	s := r.PathPrefix("/repos").Subrouter()
 
 	reposController := repos.NewController(db)
-	s.HandleFunc("/", reposController.Get)
+	r.HandleFunc("/repos", reposController.Get)
 
 	repoController := repo.NewController(db)
-	s.HandleFunc("/{repoID}", repoController.Get)
+	r.HandleFunc("/repos/{repoID}", repoController.Get)
 
 	pullsController := pulls.NewController(db)
-	s.HandleFunc("/{repoID}/pulls", pullsController.Get)
+	r.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
 
 	pullController := pull.NewController(db)
 	r.HandleFunc("/pulls/{pullID}", pullController.Get)

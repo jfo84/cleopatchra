@@ -5,7 +5,7 @@
      "ref":"master",
      "sha":"c932885e7972a4d363a62127355ceeafe18829e8",
      "repo":{
-        "id":10270250,
+        "id":1,
         "url":"https://api.github.com/repos/facebook/react",
         "fork":false,
         "name":"react",

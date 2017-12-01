@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/db"
 	"github.com/jfo84/cleopatchra/api/pull"
+	"github.com/jfo84/cleopatchra/api/pulls"
 	"github.com/jfo84/factory-go/factory"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,6 +25,13 @@ var PullFactory = factory.NewFactory(
 	&db.Pull{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
+}).Attr("RepoID", func(args factory.Args) (interface{}, error) {
+	pull := args.Instance().(*db.Pull)
+	if pull.ID != 3 {
+		return 1, nil
+	} else {
+		return 2, nil
+	}
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	pull := args.Instance().(*db.Pull)
 	fileName := fmt.Sprintf("./testing/fixtures/%d.json", pull.ID)
@@ -66,7 +74,7 @@ func TestCleopatchra(t *testing.T) {
 			panic(err)
 		}
 		pull := v.(*db.Pull)
-		fmt.Println(pull, pull.Comments)
+		fmt.Printf("%d", pull.ID)
 		tx.Commit()
 	}
 
@@ -90,11 +98,37 @@ func TestCleopatchra(t *testing.T) {
 	}
 
 	// Confirm the returned json is what we expected
-	eBytes, err := ioutil.ReadFile("./testing/fixtures/expected1.json")
+	eBytes, err := ioutil.ReadFile("./testing/fixtures/expected_pull.json")
 	if err != nil {
 		panic(err)
 	}
 	expected := string(eBytes[:])
+
+	assert.JSONEq(t, expected, recorder.Body.String(), "Response body differs")
+
+	req, err = http.NewRequest("GET", "/repos/1/pulls", nil)
+
+	if err != nil {
+		t.Errorf("An error occurred. %v", err)
+	}
+
+	recorder = httptest.NewRecorder()
+
+	pullsController := pulls.NewController(dbWrap)
+	router.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
+	router.ServeHTTP(recorder, req)
+
+	// Confirm the response has the right status code
+	if status := recorder.Code; status != http.StatusOK {
+		t.Errorf("Status code differs. Expected %d .\n Got %d instead", http.StatusOK, status)
+	}
+
+	// Confirm the returned json is what we expected
+	eBytes, err = ioutil.ReadFile("./testing/fixtures/expected_pulls.json")
+	if err != nil {
+		panic(err)
+	}
+	expected = string(eBytes[:])
 
 	assert.JSONEq(t, expected, recorder.Body.String(), "Response body differs")
 }

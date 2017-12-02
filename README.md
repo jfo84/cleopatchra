@@ -1,4 +1,4 @@
-# Cleopatchra &middot; [![Build Status](https://travis-ci.org/jfo84/cleopatchra.svg?branch=master)](https://travis-ci.org/jfo84/cleopatchra)
+# Cleopatchra &middot; [![Build Status](https://travis-ci.org/jfo84/cleopatchra.svg?branch=master)](https://travis-ci.org/jfo84/cleopatchra) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Cleopatchra downloads and stores GitHub state in a PostgreSQL database, powers a Golang server that renders a structure with JSON API relationships, and re-displays the state quickly and easily.
 

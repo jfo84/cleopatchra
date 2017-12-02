@@ -1,19 +1,27 @@
 import React from 'react';
+import { render } from 'react-dom';
+
 import injectTapEventPlugin from 'react-tap-event-plugin';
+import createSagaMiddleware from 'redux-saga';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import createSagaMiddleware from 'redux-saga';
-
-import { render } from 'react-dom';
-import { createStore, applyMiddleware } from 'redux';
-import { Provider } from 'react-redux';
 import { cyan500 } from 'material-ui/styles/colors';
 
-import App from './components/App';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+
+import createHistory from 'history/createBrowserHistory'
+import { Route } from 'react-router';
+
+import { ConnectedRouter, routerReducer, routerMiddleware, push } from 'react-router-redux';
+
 import reducer from './reducer';
 
-injectTapEventPlugin();
+import Pulls from './components/Pulls';
 
+const history = createHistory();
+
+const middleware = routerMiddleware(history);
 const sagaMiddleware = createSagaMiddleware();
 
 const muiTheme = getMuiTheme({
@@ -25,16 +33,26 @@ const muiTheme = getMuiTheme({
   }
 });
 
-export const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
+const store = createStore(
+  combineReducers({
+    ...reducer,
+    ...applyMiddleware(sagaMiddleware),
+    router: routerReducer
+  }),
+  applyMiddleware(middleware)
 );
 
-export default render(
+injectTapEventPlugin();
+
+render(
   <MuiThemeProvider muiTheme={muiTheme}>
     <Provider store={store}>
-      <App/>
+      <ConnectedRouter history={history}>
+        <div>
+          <Route path="/repos/:repoId/pulls" component={Pulls}/>
+        </div>
+      </ConnectedRouter>
     </Provider>
   </MuiThemeProvider>,
-  document.getElementById('app')
+  document.getElementById('root')
 );

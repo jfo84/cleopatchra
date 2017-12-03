@@ -34,11 +34,10 @@ const muiTheme = getMuiTheme({
 
 const store = createStore(
   combineReducers({
-    ...reducer,
-    ...applyMiddleware(thunk),
-    router: routerReducer
+    reducer,
+    router: routerReducer,
   }),
-  applyMiddleware(middleware)
+  applyMiddleware(middleware, thunk)
 );
 
 injectTapEventPlugin();
@@ -48,10 +47,11 @@ render(
     <Provider store={store}>
       <ConnectedRouter history={history}>
         <div>
+          <Route exact path="/" component={Pulls}/>
           <Route path="/repos/:repoId/pulls" component={Pulls}/>
         </div>
       </ConnectedRouter>
     </Provider>
   </MuiThemeProvider>,
-  document.getElementById('root')
+  document.getElementById('app')
 );

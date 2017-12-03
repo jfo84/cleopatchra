@@ -2,9 +2,9 @@
   "name": "cleopatchra",
   "version": "1.0.0",
   "description": "For displaying cached GitHub pull requests",
-  "main": "index.js",
+  "main": "index.jsx",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --output-path='./dist'",
     "serve": "webpack-dev-server --content-base dist/"
   },
   "author": "jfo84",
@@ -17,6 +17,7 @@
     "babel-preset-es2017": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "dotenv": "^4.0.0",
     "history": "^4.7.2",
     "material-ui": "^0.18.7",
     "query-string": "^5.0.0",

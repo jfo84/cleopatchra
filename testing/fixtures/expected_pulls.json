@@ -4,11 +4,14 @@
       "type":"pulls",
       "id":"1",
       "attributes":{
-         "body":"This info is now on the website and not in CONTRIBUTING.md",
-         "merged":false,
-         "num_comments":0,
-         "number":11489,
-         "title":"docs(readme): correct link for \"your first PR\""
+        "additions":1,
+        "body":"This info is now on the website and not in CONTRIBUTING.md",
+        "deletions":1,
+        "mergeable_state":"clean",
+        "merged":false,
+        "num_comments":0,
+        "number":11489,
+        "title":"docs(readme): correct link for \"your first PR\""
       },
       "relationships":{
          "comments":{
@@ -30,7 +33,10 @@
       "type":"pulls",
       "id":"2",
       "attributes":{
+        "additions":36,
         "body":"fix #11478 \r\n\r\n`yarn build` will run the `version-check` first and it also can include the yarn version check not just package version check, so I put my code into `scripts/tasks/version-check.js`",
+        "deletions":3,
+        "mergeable_state":"clean",
         "merged":false,
         "num_comments":2,
         "number":11487,

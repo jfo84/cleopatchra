@@ -3,7 +3,10 @@
      "type":"pulls",
      "id":"1",
      "attributes":{
+        "additions":1,
         "body":"This info is now on the website and not in CONTRIBUTING.md",
+        "deletions":1,
+        "mergeable_state":"clean",
         "merged":false,
         "num_comments":0,
         "number":11489,

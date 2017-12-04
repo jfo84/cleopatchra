@@ -11,15 +11,18 @@ type Comment struct {
 
 // Pull represents the exported version of a Github pull request
 type Pull struct {
-	ID          int        `jsonapi:"primary,pulls"`
-	Number      int        `jsonapi:"attr,number"`
-	Title       string     `jsonapi:"attr,title"`
-	Body        string     `jsonapi:"attr,body"`
-	Merged      bool       `jsonapi:"attr,merged"`
-	User        *User      `jsonapi:"relation,user"`
-	Repo        *Repo      `jsonapi:"relation,repo"`
-	NumComments int        `jsonapi:"attr,num_comments"`
-	Comments    []*Comment `jsonapi:"relation,comments"`
+	ID             int        `jsonapi:"primary,pulls"`
+	Number         int        `jsonapi:"attr,number"`
+	Additions      int        `jsonapi:"attr,additions"`
+	Deletions      int        `jsonapi:"attr,deletions"`
+	NumComments    int        `jsonapi:"attr,num_comments"`
+	Title          string     `jsonapi:"attr,title"`
+	Body           string     `jsonapi:"attr,body"`
+	MergeableState string     `jsonapi:"attr,mergeable_state"`
+	Merged         bool       `jsonapi:"attr,merged"`
+	User           *User      `jsonapi:"relation,user"`
+	Repo           *Repo      `jsonapi:"relation,repo"`
+	Comments       []*Comment `jsonapi:"relation,comments"`
 }
 
 // User represents the exported version of a user in GitHub

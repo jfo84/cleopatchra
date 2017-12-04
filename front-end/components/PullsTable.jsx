@@ -60,9 +60,9 @@ export class PullsTable extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
-    isFetching: state.isFetching,
-    pulls: state.pulls,
-    repoId: state.repoId
+    isFetching: state.reducer.isFetching,
+    pulls: state.reducer.pulls,
+    repoId: state.router.repoId
   };
 };
 

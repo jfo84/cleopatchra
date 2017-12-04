@@ -3,7 +3,8 @@ import * as actionTypes from './actionTypes';
 const initialState = {
   isFetching: false,
   page: 1,
-  limit: 10
+  limit: 10,
+  pulls: []
 };
 
 const reducer = (state = initialState, action) => {

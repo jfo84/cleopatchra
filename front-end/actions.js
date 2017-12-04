@@ -12,9 +12,9 @@ export const initialize = () => {
   };
 };
 
-export const updatePulls = (repoId, page, numPulls) => {
+export const updatePulls = (repoId, page, limit) => {
   return (dispatch) => {
-    dispatch(fetchPulls(repoId, page, numPulls))
+    dispatch(fetchPulls(repoId, page, limit))
   }
 }
 
@@ -41,28 +41,22 @@ const fetchPulls = (repoId, page = 1, limit = 10) => {
   return (dispatch) => {
     dispatch(requestPulls());
 
-    const params = Object.assign(BASE_PARAMS, { page, numPulls });
-    var url = `localhost:7000/repos/${repoId}/pulls`;
+    const params = Object.assign(BASE_PARAMS, { page, limit });
+    // TODO: Figure out passing repoId from the router
+    var url = `http://localhost:7000/repos/10270250/pulls`;
 
-    return fetch(url).then((simpleResponse) => {
-      return simpleResponse.json();
-    }).then((simplePulls) => {
-      const ids = simplePulls.map((pull) => pull.Id);
-      var url = _pullDetailsWithIds(ids);
-
-      return fetch(url).then((detailResponse) => {
-        return detailResponse.json();
-      }).then((Pulls) => {
-        dispatch(receivePulls(Pulls));
-      });
+    return fetch(url).then((response) => {
+      return response.json();
+    }).then((pulls) => {
+      dispatch(receivePulls(pulls));
     });
   }
 };
 
 export const pageForwards = () => {
   return (dispatch, getState) => {
-    var { page, numPulls } = getState();
-    var page = page + numPulls;
+    var { page, limit } = getState();
+    var page = page + limit;
     dispatch({
       type: actionTypes.CHANGE_PAGE,
       payload: page
@@ -72,8 +66,8 @@ export const pageForwards = () => {
 
 export const pageBackwards = () => {
   return (dispatch, getState) => {
-    var { page, numPulls } = getState();
-    var page = page - numPulls;
+    var { page, limit } = getState();
+    var page = page - limit;
     dispatch({
       type: actionTypes.CHANGE_PAGE,
       payload: page

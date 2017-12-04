@@ -4,7 +4,10 @@ const initialState = {
   isFetching: false,
   page: 1,
   limit: 10,
-  pulls: []
+  pulls: {
+    data: [],
+    included: []
+  }
 };
 
 const reducer = (state = initialState, action) => {

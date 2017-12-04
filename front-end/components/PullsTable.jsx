@@ -21,27 +21,29 @@ export class PullsTable extends React.Component {
     return { textAlign: 'center' };
   }
 
-  headerColumnGenerator(text, index) {
-    return(
-      <TableHeaderColumn key={index} style={this.headerColumnStyle()}>
-        {text}
-      </TableHeaderColumn>
-    );
-  }
+  // headerColumnGenerator(text, index) {
+  //   return(
+  //     <TableHeaderColumn key={index} style={this.headerColumnStyle()}>
+  //       {text}
+  //     </TableHeaderColumn>
+  //   );
+  // }
+
+  // const headerNames = ['Title', 'Body'];
+
+  // <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+  //   <TableRow>
+  //     {headerNames.map((name, index) => {
+  //       return this.headerColumnGenerator(name, index);
+  //     })}
+  //   </TableRow>
+  // </TableHeader>
 
   render() {
     const { pulls, isFetching } = this.props;
-    const headerNames = ['Name', 'Description', 'Actors', 'Director', 'Genres', 'Duration', 'Book it!'];
 
     return(
-      <Table fixedHeader={true} selectable={false}>
-        <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-          <TableRow>
-            {headerNames.map((name, index) => {
-              return this.headerColumnGenerator(name, index);
-            })}
-          </TableRow>
-        </TableHeader>
+      <Table fixedHeader={false} selectable={false}>
         <TableBody displayRowCheckbox={false} selectable={false}>
           {isFetching ?
             <TableRow>
@@ -49,7 +51,7 @@ export class PullsTable extends React.Component {
                 Loading...
               </TableRowColumn>
             </TableRow> :
-            pulls.map((pull, index) => {
+            pulls.data.map((pull, index) => {
               return <PullRow pull={pull} key={index} index={index}/>;
             })}
         </TableBody>

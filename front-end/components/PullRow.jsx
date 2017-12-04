@@ -6,7 +6,7 @@ import {
 } from 'material-ui/Table';
 
 const PullRow = ({ pull, index }) => {
-  const { title, body } = pull;
+  const { title, body } = pull.attributes;
 
   return(
     <TableRow key={index} displayBorder={true}>

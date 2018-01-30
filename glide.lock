@@ -1,10 +1,10 @@
 hash: 6ff7223af3f4bd3e21d23d3ed35568b65d99ef80cc85e5fb99a2ac8a73e111dd
-updated: 2017-11-17T19:14:06.720062218+01:00
+updated: 2018-01-30T11:06:37.969600764-06:00
 imports:
 - name: github.com/fatih/structs
   version: a720dfa8df582c51dee1b36feabb906bde1588bd
 - name: github.com/go-pg/pg
-  version: f7825ca79b63ead4417c219bba98a85b198bf605
+  version: 856191d9e0c6aa68414587916f61b68d30e2105a
   subpackages:
   - internal
   - internal/parser
@@ -16,7 +16,7 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 7f08801859139f86dfafd1c296e2cba9a80d292e
+  version: 53c1911da2b537f792e7cafcb446b05ffe33b996
 - name: github.com/jinzhu/copier
   version: db4671f3a9b8df855e993f7c94ec5ef1ffb0a23b
 - name: github.com/jinzhu/inflection
@@ -26,7 +26,15 @@ imports:
   subpackages:
   - assert
 testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
 - name: github.com/jfo84/factory-go
   version: 1d928936c2ee62f4a0385db9842bc037bac527c1
   subpackages:
   - factory
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib

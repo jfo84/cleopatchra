@@ -1,0 +1,29 @@
+{
+  "url": "https://api.github.com/repos/facebook/react/issues/comments/342920007",
+  "html_url": "https://github.com/facebook/react/pull/11489#issuecomment-342920007",
+  "issue_url": "https://api.github.com/repos/facebook/react/issues/11489",
+  "id": 342920007,
+  "user": {
+    "login": "gaearon",
+    "id": 810438,
+    "avatar_url": "https://avatars0.githubusercontent.com/u/810438?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/gaearon",
+    "html_url": "https://github.com/gaearon",
+    "followers_url": "https://api.github.com/users/gaearon/followers",
+    "following_url": "https://api.github.com/users/gaearon/following{/other_user}",
+    "gists_url": "https://api.github.com/users/gaearon/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/gaearon/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/gaearon/subscriptions",
+    "organizations_url": "https://api.github.com/users/gaearon/orgs",
+    "repos_url": "https://api.github.com/users/gaearon/repos",
+    "events_url": "https://api.github.com/users/gaearon/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/gaearon/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "created_at": "2017-11-08T18:48:21Z",
+  "updated_at": "2017-11-08T18:48:21Z",
+  "author_association": "MEMBER",
+  "body": "Thanks"
+}

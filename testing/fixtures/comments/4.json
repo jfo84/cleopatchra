@@ -1,0 +1,29 @@
+{
+  "url": "https://api.github.com/repos/facebook/react/issues/comments/342761760",
+  "html_url": "https://github.com/facebook/react/pull/11487#issuecomment-342761760",
+  "issue_url": "https://api.github.com/repos/facebook/react/issues/11487",
+  "id": 342761760,
+  "user": {
+    "login": "monkindey",
+    "id": 6913898,
+    "avatar_url": "https://avatars0.githubusercontent.com/u/6913898?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/monkindey",
+    "html_url": "https://github.com/monkindey",
+    "followers_url": "https://api.github.com/users/monkindey/followers",
+    "following_url": "https://api.github.com/users/monkindey/following{/other_user}",
+    "gists_url": "https://api.github.com/users/monkindey/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/monkindey/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/monkindey/subscriptions",
+    "organizations_url": "https://api.github.com/users/monkindey/orgs",
+    "repos_url": "https://api.github.com/users/monkindey/repos",
+    "events_url": "https://api.github.com/users/monkindey/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/monkindey/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "created_at": "2017-11-08T09:34:50Z",
+  "updated_at": "2017-11-08T09:34:50Z",
+  "author_association": "CONTRIBUTOR",
+  "body": "[This](https://github.com/facebook/react/issues/11478#issuecomment-342499744) 😀"
+}

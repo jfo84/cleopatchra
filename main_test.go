@@ -25,15 +25,9 @@ var PullFactory = factory.NewFactory(
 	&db.Pull{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
-}).Attr("RepoID", func(args factory.Args) (interface{}, error) {
-	pull := args.Instance().(*db.Pull)
-	if pull.ID != 3 {
-		return 1, nil
-	}
-	return 2, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	pull := args.Instance().(*db.Pull)
-	fileName := fmt.Sprintf("./testing/fixtures/%d.json", pull.ID)
+	fileName := fmt.Sprintf("./testing/fixtures/pulls/%d.json", pull.ID)
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		panic(err)
@@ -43,7 +37,7 @@ var PullFactory = factory.NewFactory(
 	const txKey key = "tx"
 	tx := args.Context().Value(txKey).(*pg.Tx)
 	return tx.Insert(args.Instance())
-}).SubSliceFactory("Comments", CommentFactory, func() int { return 3 })
+}).SubSliceFactory("Comments", CommentFactory, func() int { return 2 })
 
 // CommentFactory is a factory for generating temporary rows on the comments table
 var CommentFactory = factory.NewFactory(
@@ -52,7 +46,12 @@ var CommentFactory = factory.NewFactory(
 	return n, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	comment := args.Instance().(*db.Comment)
-	return fmt.Sprintf("comment-%d", comment.ID), nil
+	fileName := fmt.Sprintf("./testing/fixtures/comments/%d.json", comment.ID)
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		panic(err)
+	}
+	return string(data[:]), nil
 }).OnCreate(func(args factory.Args) error {
 	const txKey key = "tx"
 	tx := args.Context().Value(txKey).(*pg.Tx)
@@ -103,7 +102,9 @@ func TestCleopatchra(t *testing.T) {
 	}
 	expected := string(eBytes[:])
 
-	assert.JSONEq(t, expected, recorder.Body.String(), "Response body differs")
+	fmt.Println(recorder.Body.String())
+
+	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
 
 	req, err = http.NewRequest("GET", "/repos/1/pulls", nil)
 
@@ -129,5 +130,7 @@ func TestCleopatchra(t *testing.T) {
 	}
 	expected = string(eBytes[:])
 
-	assert.JSONEq(t, expected, recorder.Body.String(), "Response body differs")
+	fmt.Println(recorder.Body.String())
+
+	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
 }

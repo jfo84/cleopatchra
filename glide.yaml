@@ -10,6 +10,6 @@ import:
   version: ~1.0.0
 - package: github.com/jinzhu/copier
 - package: github.com/stretchr/testify
-  version: ~1.1.4
-  subpackages:
-  - assert
+  version: ^1.2.1
+- package: gopkg.in/h2non/baloo.v3
+  version: ^3.0.0

@@ -33,6 +33,13 @@ var PullFactory = factory.NewFactory(
 		panic(err)
 	}
 	return string(data[:]), nil
+}).SeqInt("RepoID", func(n int) (interface{}, error) {
+	// Return 1, 1, 2, 2, 3, 3, etc.
+	// TODO: Maybe pass around context or add a way to access parent factory values
+	if n%2 == 1 {
+		return (n + 1) / 2, nil
+	}
+	return n / 2, nil
 }).OnCreate(func(args factory.Args) error {
 	const txKey key = "tx"
 	tx := args.Context().Value(txKey).(*pg.Tx)
@@ -74,12 +81,11 @@ func TestCleopatchra(t *testing.T) {
 		const txKey key = "tx"
 
 		ctx := context.WithValue(context.Background(), txKey, tx)
-		v, err := PullFactory.CreateWithContext(ctx)
+		_, err := PullFactory.CreateWithContext(ctx)
 		if err != nil {
 			panic(err)
 		}
-		pull := v.(*db.Pull)
-		fmt.Printf("%d", pull.ID)
+
 		tx.Commit()
 	}
 
@@ -109,8 +115,6 @@ func TestCleopatchra(t *testing.T) {
 	}
 	expected := string(eBytes[:])
 
-	fmt.Println(recorder.Body.String())
-
 	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
 
 	req, err = http.NewRequest("GET", "/repos/1/pulls", nil)
@@ -137,7 +141,7 @@ func TestCleopatchra(t *testing.T) {
 	}
 	expected = string(eBytes[:])
 
-	fmt.Println(recorder.Body.String())
+	fmt.Printf(recorder.Body.String())
 
 	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
 }

@@ -285,9 +285,7 @@ func createTestSchema(wrapper *Wrapper) error {
 			return err
 		}
 
-		err = wrapper.db.CreateTable(table, &orm.CreateTableOptions{
-			Temp: true,
-		})
+		err = wrapper.db.CreateTable(table, &orm.CreateTableOptions{})
 		if err != nil {
 			return err
 		}

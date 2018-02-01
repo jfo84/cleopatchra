@@ -44,6 +44,13 @@ var CommentFactory = factory.NewFactory(
 	&db.Comment{},
 ).SeqInt("ID", func(n int) (interface{}, error) {
 	return n, nil
+}).SeqInt("PullID", func(n int) (interface{}, error) {
+	// Return 1, 1, 2, 2, 3, 3, etc.
+	// TODO: Maybe pass around context or add a way to access parent factory values
+	if n%2 == 1 {
+		return (n + 1) / 2, nil
+	}
+	return n / 2, nil
 }).Attr("Data", func(args factory.Args) (interface{}, error) {
 	comment := args.Instance().(*db.Comment)
 	fileName := fmt.Sprintf("./testing/fixtures/comments/%d.json", comment.ID)

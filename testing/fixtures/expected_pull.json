@@ -17,27 +17,11 @@
            "data":[
               {
                  "type":"comments",
-                 "id":"342920007"
+                 "id":"1"
               },
               {
                  "type":"comments",
-                 "id":"342921256"
-              },
-              {
-                 "type":"comments",
-                 "id":"342749980"
-              },
-              {
-                 "type":"comments",
-                 "id":"342761760"
-              },
-              {
-                 "type":"comments",
-                 "id":"342627368"
-              },
-              {
-                 "type":"comments",
-                 "id":"342627367"
+                 "id":"2"
               }
            ]
         },
@@ -62,54 +46,6 @@
      },
      {
         "type":"users",
-        "id":"6913898",
-        "attributes":{
-           "login":"monkindey"
-        }
-     },
-     {
-        "type":"users",
-        "id":"3696934",
-        "attributes":{
-           "login":"clemmy"
-        }
-     },
-     {
-        "type":"comments",
-        "id":"342921256",
-        "attributes":{
-           "body":"With pleasure",
-           "original_position":0,
-           "position":0
-        },
-        "relationships":{
-           "user":{
-              "data":{
-                 "type":"users",
-                 "id":"6270048"
-              }
-           }
-        }
-     },
-     {
-        "type":"comments",
-        "id":"342761760",
-        "attributes":{
-           "body":"[This](https://github.com/facebook/react/issues/11478#issuecomment-342499744) 😀",
-           "original_position":0,
-           "position":0
-        },
-        "relationships":{
-           "user":{
-              "data":{
-                 "type":"users",
-                 "id":"6913898"
-              }
-           }
-        }
-     },
-     {
-        "type":"users",
         "id":"810438",
         "attributes":{
            "login":"gaearon"
@@ -117,7 +53,7 @@
      },
      {
         "type":"comments",
-        "id":"342920007",
+        "id":"1",
         "attributes":{
            "body":"Thanks",
            "original_position":0,
@@ -134,9 +70,9 @@
      },
      {
         "type":"comments",
-        "id":"342749980",
+        "id":"2",
         "attributes":{
-           "body":"Shouldn't the `engines` field in package.json be enough?",
+           "body":"With pleasure",
            "original_position":0,
            "position":0
         },
@@ -145,40 +81,6 @@
               "data":{
                  "type":"users",
                  "id":"6270048"
-              }
-           }
-        }
-     },
-     {
-        "type":"comments",
-        "id":"342627368",
-        "attributes":{
-           "body":"LGTM after prettier failure is addressed.",
-           "original_position":0,
-           "position":0
-        },
-        "relationships":{
-           "user":{
-              "data":{
-                 "type":"users",
-                 "id":"3696934"
-              }
-           }
-        }
-     },
-     {
-        "type":"comments",
-        "id":"342627367",
-        "attributes":{
-           "body":"LGTM after blah blah blah is addressed.",
-           "original_position":0,
-           "position":0
-        },
-        "relationships":{
-           "user":{
-              "data":{
-                 "type":"users",
-                 "id":"3696934"
               }
            }
         }

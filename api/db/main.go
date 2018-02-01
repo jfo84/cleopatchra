@@ -202,6 +202,7 @@ func (wrap *Wrapper) buildExportedComments(pull *Pull) []*exports.Comment {
 	var comments []Comment
 
 	err := wrap.db.Model(&comments).
+		Where("comment.pull_id = ?", pull.ID).
 		Select()
 	if err != nil {
 		panic(err)

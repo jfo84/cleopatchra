@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/go-pg/pg"
 	"github.com/gorilla/mux"
@@ -14,7 +13,9 @@ import (
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/cleopatchra/api/pulls"
 	"github.com/jfo84/factory-go/factory"
-	"github.com/stretchr/testify/assert"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 // To avoid collisions with other keys
@@ -72,7 +73,13 @@ var CommentFactory = factory.NewFactory(
 	return tx.Insert(args.Instance())
 })
 
-func TestCleopatchra(t *testing.T) {
+var _ = Describe("TestCleopatchra", func() {
+	var (
+		req *http.Request
+		err error
+	)
+
+	router := mux.NewRouter().StrictSlash(true)
 	dbWrap := db.OpenTestDB()
 
 	for i := 0; i < 3; i++ {
@@ -89,59 +96,43 @@ func TestCleopatchra(t *testing.T) {
 		tx.Commit()
 	}
 
-	router := mux.NewRouter().StrictSlash(true)
+	Context("Pull Requests", func() {
+		It("Should correctly return a pull", func() {
+			req, err = http.NewRequest("GET", "/pulls/1", nil)
 
-	req, err := http.NewRequest("GET", "/pulls/1", nil)
+			recorder := httptest.NewRecorder()
 
-	if err != nil {
-		t.Errorf("An error occurred. %v", err)
-	}
+			pullController := pull.NewController(dbWrap)
+			router.HandleFunc("/pulls/{pullID}", pullController.Get)
+			router.ServeHTTP(recorder, req)
 
-	recorder := httptest.NewRecorder()
+			// Confirm the returned json is what we expected
+			eBytes, err := ioutil.ReadFile("./testing/fixtures/expected_pull.json")
+			if err != nil {
+				panic(err)
+			}
+			expected := string(eBytes[:])
 
-	pullController := pull.NewController(dbWrap)
-	router.HandleFunc("/pulls/{pullID}", pullController.Get)
-	router.ServeHTTP(recorder, req)
+			Ω(expected).Should(MatchJSON(recorder.Body.String()))
+		})
 
-	// Confirm the response has the right status code
-	if status := recorder.Code; status != http.StatusOK {
-		t.Errorf("Status code differs. Expected %d .\n Got %d instead", http.StatusOK, status)
-	}
+		It("Should correctly return pulls", func() {
+			req, err = http.NewRequest("GET", "/repos/1/pulls", nil)
 
-	// Confirm the returned json is what we expected
-	eBytes, err := ioutil.ReadFile("./testing/fixtures/expected_pull.json")
-	if err != nil {
-		panic(err)
-	}
-	expected := string(eBytes[:])
+			recorder := httptest.NewRecorder()
 
-	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
+			pullsController := pulls.NewController(dbWrap)
+			router.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
+			router.ServeHTTP(recorder, req)
 
-	req, err = http.NewRequest("GET", "/repos/1/pulls", nil)
+			// Confirm the returned json is what we expected
+			eBytes, err := ioutil.ReadFile("./testing/fixtures/expected_pulls.json")
+			if err != nil {
+				panic(err)
+			}
+			expected := string(eBytes[:])
 
-	if err != nil {
-		t.Errorf("An error occurred. %v", err)
-	}
-
-	recorder = httptest.NewRecorder()
-
-	pullsController := pulls.NewController(dbWrap)
-	router.HandleFunc("/repos/{repoID}/pulls", pullsController.Get)
-	router.ServeHTTP(recorder, req)
-
-	// Confirm the response has the right status code
-	if status := recorder.Code; status != http.StatusOK {
-		t.Errorf("Status code differs. Expected %d .\n Got %d instead", http.StatusOK, status)
-	}
-
-	// Confirm the returned json is what we expected
-	eBytes, err = ioutil.ReadFile("./testing/fixtures/expected_pulls.json")
-	if err != nil {
-		panic(err)
-	}
-	expected = string(eBytes[:])
-
-	fmt.Printf(recorder.Body.String())
-
-	assert.JSONEqf(t, expected, recorder.Body.String(), "Response body differs")
-}
+			Ω(expected).Should(MatchJSON(recorder.Body.String()))
+		})
+	})
+})

@@ -46,7 +46,7 @@
            "deletions":3,
            "mergeable_state":"clean",
            "merged":false,
-           "num_comments":21,
+           "num_comments":2,
            "number":11487,
            "title":"let `yarn build` warn if local yarn version not support workspaces"
         },
@@ -76,37 +76,6 @@
      }
   ],
   "included":[
-     {
-        "type":"users",
-        "id":"6270048",
-        "attributes":{
-           "login":"Haroenv"
-        }
-     },
-     {
-        "type":"users",
-        "id":"810438",
-        "attributes":{
-           "login":"gaearon"
-        }
-     },
-     {
-        "type":"comments",
-        "id":"1",
-        "attributes":{
-           "body":"Thanks",
-           "original_position":0,
-           "position":0
-        },
-        "relationships":{
-           "user":{
-              "data":{
-                 "type":"users",
-                 "id":"810438"
-              }
-           }
-        }
-     },
      {
         "type":"comments",
         "id":"2",
@@ -164,6 +133,37 @@
               }
            }
         }
-     }
+     },
+     {
+      "type": "users",
+      "id": "6270048",
+      "attributes": {
+        "login": "Haroenv"
+      }
+    },
+    {
+      "type": "users",
+      "id": "810438",
+      "attributes": {
+        "login": "gaearon"
+      }
+    },
+    {
+      "type": "comments",
+      "id": "1",
+      "attributes": {
+        "body": "Thanks",
+        "original_position": 0,
+        "position": 0
+      },
+      "relationships": {
+        "user": {
+          "data": {
+            "type": "users",
+            "id": "810438"
+          }
+        }
+      }
+    }
   ]
 }

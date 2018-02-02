@@ -26,10 +26,10 @@ type Comment struct {
 	ID     int
 	Data   string
 	PullID int
-	Pull   *Pull
 }
 
 // Pull represents the database version of a GitHub pull request
+// TODO: Add Repo to Pull from Pull Data in generalized function
 type Pull struct {
 	ID       int
 	Data     string
@@ -121,7 +121,6 @@ func (wrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 
 	var pull Pull
 	err = wrap.db.Model(&pull).
-		Column("pull.*", "Comments").
 		Where("pull.id = ?", ID).
 		Select()
 	if err != nil {
@@ -138,7 +137,7 @@ func (wrap *Wrapper) GetPull(w http.ResponseWriter, r *http.Request) {
 	var ePull exports.Pull
 	copier.Copy(&ePull, &uPull)
 
-	eComments := buildExportedComments(pull.Comments)
+	eComments := wrap.buildExportedComments(&pull)
 	ePull.Comments = eComments
 
 	addResponseHeaders(w)
@@ -185,7 +184,7 @@ func (wrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 			var ePull exports.Pull
 			copier.Copy(&ePull, &uPull)
 
-			eComments := buildExportedComments(pull.Comments)
+			eComments := wrap.buildExportedComments(&pull)
 			ePull.Comments = eComments
 			ePulls[idx] = &ePull
 		}(idx, pull)
@@ -199,8 +198,18 @@ func (wrap *Wrapper) GetPulls(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func buildExportedComments(comments []*Comment) []*exports.Comment {
+func (wrap *Wrapper) buildExportedComments(pull *Pull) []*exports.Comment {
+	var comments []Comment
+
+	err := wrap.db.Model(&comments).
+		Where("comment.pull_id = ?", pull.ID).
+		Select()
+	if err != nil {
+		panic(err)
+	}
+
 	eComments := make([]*exports.Comment, len(comments))
+
 	for idx, comment := range comments {
 		var eComment exports.Comment
 		commentBytes := []byte(comment.Data)
@@ -276,9 +285,7 @@ func createTestSchema(wrapper *Wrapper) error {
 			return err
 		}
 
-		err = wrapper.db.CreateTable(table, &orm.CreateTableOptions{
-			Temp: true,
-		})
+		err = wrapper.db.CreateTable(table, &orm.CreateTableOptions{})
 		if err != nil {
 			return err
 		}

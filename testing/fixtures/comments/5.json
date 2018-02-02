@@ -1,0 +1,29 @@
+{
+  "url": "https://api.github.com/repos/facebook/react/issues/comments/342627368",
+  "html_url": "https://github.com/facebook/react/pull/11484#issuecomment-342627368",
+  "issue_url": "https://api.github.com/repos/facebook/react/issues/11484",
+  "id": 5,
+  "user": {
+    "login": "clemmy",
+    "id": 3696934,
+    "avatar_url": "https://avatars0.githubusercontent.com/u/3696934?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/clemmy",
+    "html_url": "https://github.com/clemmy",
+    "followers_url": "https://api.github.com/users/clemmy/followers",
+    "following_url": "https://api.github.com/users/clemmy/following{/other_user}",
+    "gists_url": "https://api.github.com/users/clemmy/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/clemmy/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/clemmy/subscriptions",
+    "organizations_url": "https://api.github.com/users/clemmy/orgs",
+    "repos_url": "https://api.github.com/users/clemmy/repos",
+    "events_url": "https://api.github.com/users/clemmy/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/clemmy/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "created_at": "2017-11-07T21:25:55Z",
+  "updated_at": "2017-11-07T21:25:55Z",
+  "author_association": "CONTRIBUTOR",
+  "body": "LGTM after prettier failure is addressed."
+}

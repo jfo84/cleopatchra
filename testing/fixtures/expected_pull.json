@@ -8,13 +8,21 @@
         "deletions":1,
         "mergeable_state":"clean",
         "merged":false,
-        "num_comments":0,
+        "num_comments":2,
         "number":11489,
         "title":"docs(readme): correct link for \"your first PR\""
      },
      "relationships":{
         "comments":{
            "data":[
+              {
+                 "type":"comments",
+                 "id":"1"
+              },
+              {
+                 "type":"comments",
+                 "id":"2"
+              }
            ]
         },
         "repo":{
@@ -34,6 +42,47 @@
         "id":"6270048",
         "attributes":{
            "login":"Haroenv"
+        }
+     },
+     {
+        "type":"users",
+        "id":"810438",
+        "attributes":{
+           "login":"gaearon"
+        }
+     },
+     {
+        "type":"comments",
+        "id":"1",
+        "attributes":{
+           "body":"Thanks",
+           "original_position":0,
+           "position":0
+        },
+        "relationships":{
+           "user":{
+              "data":{
+                 "type":"users",
+                 "id":"810438"
+              }
+           }
+        }
+     },
+     {
+        "type":"comments",
+        "id":"2",
+        "attributes":{
+           "body":"With pleasure",
+           "original_position":0,
+           "position":0
+        },
+        "relationships":{
+           "user":{
+              "data":{
+                 "type":"users",
+                 "id":"6270048"
+              }
+           }
         }
      }
   ]

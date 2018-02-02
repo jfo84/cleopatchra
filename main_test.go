@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 
 	"github.com/go-pg/pg"
+	"github.com/google/jsonapi"
 	"github.com/gorilla/mux"
 	"github.com/jfo84/cleopatchra/api/db"
+	"github.com/jfo84/cleopatchra/api/exports"
 	"github.com/jfo84/cleopatchra/api/pull"
 	"github.com/jfo84/cleopatchra/api/pulls"
 	"github.com/jfo84/factory-go/factory"
@@ -111,9 +115,19 @@ var _ = Describe("TestCleopatchra", func() {
 			if err != nil {
 				panic(err)
 			}
-			expected := string(eBytes[:])
 
-			Ω(expected).Should(MatchJSON(recorder.Body.String()))
+			expectedPull := new(exports.Pull)
+			reader := bytes.NewReader(eBytes)
+
+			jsonapi.UnmarshalPayload(reader, expectedPull)
+
+			reader = bytes.NewReader(recorder.Body.Bytes())
+			actualPull := new(exports.Pull)
+
+			jsonapi.UnmarshalPayload(reader, actualPull)
+
+			Expect(recorder.Code).To(Equal(http.StatusOK))
+			Expect(expectedPull).To(BeEquivalentTo(actualPull))
 		})
 
 		It("Should correctly return pulls", func() {
@@ -130,9 +144,20 @@ var _ = Describe("TestCleopatchra", func() {
 			if err != nil {
 				panic(err)
 			}
-			expected := string(eBytes[:])
 
-			Ω(expected).Should(MatchJSON(recorder.Body.String()))
+			var ePulls []*exports.Pull
+			pullType := reflect.TypeOf(ePulls)
+
+			reader := bytes.NewReader(eBytes)
+
+			expectedPulls, err := jsonapi.UnmarshalManyPayload(reader, pullType)
+
+			reader = bytes.NewReader(recorder.Body.Bytes())
+
+			actualPulls, err := jsonapi.UnmarshalManyPayload(reader, pullType)
+
+			Expect(recorder.Code).To(Equal(http.StatusOK))
+			Expect(expectedPulls).To(BeEquivalentTo(actualPulls))
 		})
 	})
 })

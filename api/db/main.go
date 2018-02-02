@@ -262,7 +262,7 @@ func OpenTestDB() *Wrapper {
 	})
 	wrapper := &Wrapper{db: db}
 
-	err := CreateTestSchema(wrapper)
+	err := createTestSchema(wrapper)
 	if err != nil {
 		panic(err)
 	}
@@ -270,8 +270,7 @@ func OpenTestDB() *Wrapper {
 	return wrapper
 }
 
-// CreateTestSchema initializes temporary testing tables
-func CreateTestSchema(wrapper *Wrapper) error {
+func createTestSchema(wrapper *Wrapper) error {
 	tables := []interface{}{
 		&Repo{},
 		&Pull{},

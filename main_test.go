@@ -111,7 +111,8 @@ var _ = Describe("TestCleopatchra", func() {
 			router.ServeHTTP(recorder, req)
 
 			// Confirm the returned json is what we expected
-			eBytes, err := ioutil.ReadFile("./testing/fixtures/expected_pull.json")
+			var eBytes []byte
+			eBytes, err = ioutil.ReadFile("./testing/fixtures/expected_pull.json")
 			if err != nil {
 				panic(err)
 			}
